@@ -219,7 +219,17 @@
     }
   </style>
 </head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script>
+const SUPABASE_URL = "https://ajjurecdcxjnqgjjfdgh.supabase.co/rest/v1/";
+const SUPABASE_ANON_KEY = "sb_publishable__SKCRSh1D0MT_d_VYGAS4Q_8vpE4han";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
+</script>
 <body>
 
   <main class="app">
@@ -362,11 +372,659 @@
 
   <script>
 
-    function mensagem(texto) {
-      alert(texto);
+/* =========================================================
+   OGMO ESTUDOS — MOTOR DE QUESTÕES
+   ========================================================= */
+
+let perfilAtual = null;
+let materiaAtual = null;
+let questaoAtual = null;
+let alternativasAtuais = [];
+let indiceQuestao = 0;
+
+const estudoHTML = `
+<section id="estudoApp" style="
+    max-width:900px;
+    margin:30px auto;
+    padding:20px;
+    background:#fff;
+    border-radius:18px;
+    box-shadow:0 4px 20px rgba(0,0,0,.08);
+">
+
+    <h2 style="margin-top:0;">📚 Estudar questões</h2>
+
+    <div id="configEstudo">
+
+        <label style="display:block;margin:15px 0 6px;font-weight:bold;">
+            Usuário
+        </label>
+
+        <select id="selectPerfil" style="
+            width:100%;
+            padding:12px;
+            border:1px solid #ddd;
+            border-radius:10px;
+        ">
+            <option value="">Carregando usuários...</option>
+        </select>
+
+        <label style="display:block;margin:15px 0 6px;font-weight:bold;">
+            Matéria
+        </label>
+
+        <select id="selectMateria" style="
+            width:100%;
+            padding:12px;
+            border:1px solid #ddd;
+            border-radius:10px;
+        ">
+            <option value="">Todas as matérias</option>
+        </select>
+
+        <button id="btnComecar" style="
+            margin-top:18px;
+            width:100%;
+            padding:14px;
+            border:0;
+            border-radius:10px;
+            background:#0f172a;
+            color:white;
+            font-weight:bold;
+            font-size:16px;
+        ">
+            Começar a estudar
+        </button>
+
+    </div>
+
+    <div id="areaQuestao" style="display:none;margin-top:25px;">
+
+        <div id="infoQuestao" style="
+            color:#667085;
+            font-size:14px;
+            margin-bottom:12px;
+        "></div>
+
+        <div id="contadorQuestao" style="
+            color:#667085;
+            font-size:13px;
+            margin-bottom:15px;
+        "></div>
+
+        <h3 id="textoQuestao" style="
+            line-height:1.5;
+            font-size:20px;
+        "></h3>
+
+        <div id="alternativasQuestao" style="
+            display:grid;
+            gap:10px;
+            margin-top:20px;
+        "></div>
+
+        <div id="resultadoQuestao" style="
+            display:none;
+            margin-top:20px;
+            padding:15px;
+            border-radius:10px;
+        "></div>
+
+        <div id="explicacaoQuestao" style="
+            display:none;
+            margin-top:18px;
+            padding:18px;
+            background:#f5f7fa;
+            border-radius:12px;
+            line-height:1.6;
+        "></div>
+
+        <button id="btnProxima" style="
+            display:none;
+            margin-top:18px;
+            width:100%;
+            padding:14px;
+            border:0;
+            border-radius:10px;
+            background:#0f172a;
+            color:white;
+            font-weight:bold;
+        ">
+            Próxima questão
+        </button>
+
+        <button id="btnVoltar" style="
+            margin-top:10px;
+            width:100%;
+            padding:12px;
+            border:0;
+            border-radius:10px;
+            background:#e9eef6;
+            color:#172033;
+            font-weight:bold;
+        ">
+            Escolher outra matéria
+        </button>
+
+    </div>
+
+    <div id="mensagemEstudo" style="margin-top:15px;"></div>
+
+</section>
+`;
+
+
+/* ---------------------------------------------------------
+   COLOCA A INTERFACE NO SITE
+   --------------------------------------------------------- */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const main = document.querySelector("main");
+
+    if (!main) {
+        console.error("Não encontrei a tag <main>.");
+        return;
     }
 
-  </script>
+    main.insertAdjacentHTML("beforeend", estudoHTML);
+
+    document
+        .getElementById("btnComecar")
+        .addEventListener("click", iniciarEstudo);
+
+    document
+        .getElementById("btnProxima")
+        .addEventListener("click", carregarProximaQuestao);
+
+    document
+        .getElementById("btnVoltar")
+        .addEventListener("click", voltarConfiguracao);
+
+    carregarDadosIniciais();
+
+});
+
+
+/* ---------------------------------------------------------
+   MENSAGENS
+   --------------------------------------------------------- */
+
+function mensagem(texto, tipo = "info") {
+
+    const elemento = document.getElementById("mensagemEstudo");
+
+    if (!elemento) return;
+
+    let fundo = "#eef5ff";
+    let cor = "#2457a6";
+
+    if (tipo === "erro") {
+        fundo = "#fff0f0";
+        cor = "#a51d2d";
+    }
+
+    if (tipo === "sucesso") {
+        fundo = "#eaf8ef";
+        cor = "#176b36";
+    }
+
+    elemento.innerHTML = `
+        <div style="
+            background:${fundo};
+            color:${cor};
+            padding:12px;
+            border-radius:10px;
+            margin-top:10px;
+        ">
+            ${texto}
+        </div>
+    `;
+}
+
+
+/* ---------------------------------------------------------
+   CARREGA USUÁRIOS E MATÉRIAS
+   --------------------------------------------------------- */
+
+async function carregarDadosIniciais() {
+
+    try {
+
+        const { data: perfis, error: erroPerfis } =
+            await supabaseClient
+                .from("perfis")
+                .select("id,nome")
+                .eq("ativo", true)
+                .order("nome");
+
+        if (erroPerfis) throw erroPerfis;
+
+        const selectPerfil =
+            document.getElementById("selectPerfil");
+
+        selectPerfil.innerHTML =
+            '<option value="">Selecione seu usuário</option>';
+
+        (perfis || []).forEach(function (perfil) {
+
+            selectPerfil.innerHTML += `
+                <option value="${perfil.id}">
+                    ${escaparHTML(perfil.nome)}
+                </option>
+            `;
+
+        });
+
+
+        const { data: materias, error: erroMaterias } =
+            await supabaseClient
+                .from("materias")
+                .select("id,nome,ordem")
+                .order("ordem");
+
+        if (erroMaterias) throw erroMaterias;
+
+        const selectMateria =
+            document.getElementById("selectMateria");
+
+        selectMateria.innerHTML =
+            '<option value="">Todas as matérias</option>';
+
+        (materias || []).forEach(function (materia) {
+
+            selectMateria.innerHTML += `
+                <option value="${materia.id}">
+                    ${escaparHTML(materia.nome)}
+                </option>
+            `;
+
+        });
+
+        mensagem(
+            "Banco conectado. Escolha seu usuário e uma matéria.",
+            "sucesso"
+        );
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        mensagem(
+            "Não consegui carregar os dados do Supabase.<br><br>" +
+            escaparHTML(erro.message || String(erro)),
+            "erro"
+        );
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   COMEÇAR
+   --------------------------------------------------------- */
+
+async function iniciarEstudo() {
+
+    perfilAtual =
+        document.getElementById("selectPerfil").value;
+
+    materiaAtual =
+        document.getElementById("selectMateria").value;
+
+    if (!perfilAtual) {
+
+        mensagem(
+            "Selecione seu usuário antes de começar.",
+            "erro"
+        );
+
+        return;
+    }
+
+    indiceQuestao = 0;
+
+    document
+        .getElementById("configEstudo")
+        .style.display = "none";
+
+    document
+        .getElementById("areaQuestao")
+        .style.display = "block";
+
+    await carregarProximaQuestao();
+
+}
+
+
+/* ---------------------------------------------------------
+   CARREGA UMA QUESTÃO
+   --------------------------------------------------------- */
+
+async function carregarProximaQuestao() {
+
+    document
+        .getElementById("resultadoQuestao")
+        .style.display = "none";
+
+    document
+        .getElementById("explicacaoQuestao")
+        .style.display = "none";
+
+    document
+        .getElementById("btnProxima")
+        .style.display = "none";
+
+    const areaAlternativas =
+        document.getElementById("alternativasQuestao");
+
+    areaAlternativas.innerHTML =
+        "<p>Carregando questão...</p>";
+
+    try {
+
+        let consulta =
+            supabaseClient
+                .from("questoes")
+                .select(`
+                    id,
+                    id_curadoria,
+                    enunciado,
+                    explicacao,
+                    fundamento,
+                    dificuldade,
+                    assunto_id,
+                    assuntos!inner (
+                        id,
+                        nome,
+                        materia_id,
+                        materias!inner (
+                            id,
+                            nome
+                        )
+                    )
+                `)
+                .eq("ativa", true)
+                .eq("status_revisao", "aprovada_gold");
+
+        if (materiaAtual) {
+
+            consulta =
+                consulta.eq(
+                    "assuntos.materia_id",
+                    materiaAtual
+                );
+
+        }
+
+        const { data: questoes, error } =
+            await consulta
+                .range(indiceQuestao, indiceQuestao);
+
+        if (error) throw error;
+
+        if (!questoes || questoes.length === 0) {
+
+            mensagem(
+                "Não encontramos mais questões para esse filtro.",
+                "info"
+            );
+
+            return;
+        }
+
+        questaoAtual = questoes[0];
+
+
+        const { data: alternativas, error: erroAlternativas } =
+            await supabaseClient
+                .from("alternativas")
+                .select("id,letra,texto,correta,ordem")
+                .eq("questao_id", questaoAtual.id)
+                .order("ordem");
+
+        if (erroAlternativas) throw erroAlternativas;
+
+        alternativasAtuais = alternativas || [];
+
+        mostrarQuestao();
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        areaAlternativas.innerHTML = "";
+
+        mensagem(
+            "Erro ao carregar questão:<br><br>" +
+            escaparHTML(erro.message || String(erro)),
+            "erro"
+        );
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   MOSTRA QUESTÃO NA TELA
+   --------------------------------------------------------- */
+
+function mostrarQuestao() {
+
+    const materia =
+        questaoAtual.assuntos.materias.nome;
+
+    const assunto =
+        questaoAtual.assuntos.nome;
+
+    document.getElementById("infoQuestao").innerHTML =
+        `<strong>${escaparHTML(materia)}</strong> •
+         ${escaparHTML(assunto)}`;
+
+    document.getElementById("contadorQuestao").textContent =
+        "Questão " + (indiceQuestao + 1);
+
+    document.getElementById("textoQuestao").textContent =
+        questaoAtual.enunciado;
+
+
+    const area =
+        document.getElementById("alternativasQuestao");
+
+    area.innerHTML = "";
+
+
+    alternativasAtuais.forEach(function (alternativa) {
+
+        const botao =
+            document.createElement("button");
+
+        botao.type = "button";
+
+        botao.style.cssText = `
+            width:100%;
+            text-align:left;
+            padding:15px;
+            border:1px solid #d8dee9;
+            border-radius:10px;
+            background:#f8fafc;
+            color:#172033;
+            font-size:16px;
+            line-height:1.45;
+        `;
+
+        botao.innerHTML =
+            `<strong>${alternativa.letra})</strong>
+             ${escaparHTML(alternativa.texto)}`;
+
+        botao.onclick = function () {
+
+            responderQuestao(
+                alternativa.letra,
+                alternativa.correta
+            );
+
+        };
+
+        area.appendChild(botao);
+
+    });
+
+}
+
+
+/* ---------------------------------------------------------
+   RESPONDER
+   --------------------------------------------------------- */
+
+async function responderQuestao(
+    letraEscolhida,
+    estavaCorreta
+) {
+
+    const botoes =
+        document.querySelectorAll(
+            "#alternativasQuestao button"
+        );
+
+    botoes.forEach(function (botao) {
+        botao.disabled = true;
+        botao.style.opacity = "0.8";
+    });
+
+
+    const resultado =
+        document.getElementById("resultadoQuestao");
+
+    resultado.style.display = "block";
+
+
+    if (estavaCorreta) {
+
+        resultado.style.background = "#eaf8ef";
+        resultado.style.color = "#176b36";
+
+        resultado.innerHTML =
+            "<strong>✓ CORRETA!</strong>";
+
+    } else {
+
+        resultado.style.background = "#fff0f0";
+        resultado.style.color = "#a51d2d";
+
+        const correta =
+            alternativasAtuais.find(
+                function (a) {
+                    return a.correta === true;
+                }
+            );
+
+        resultado.innerHTML =
+            `<strong>✗ INCORRETA</strong><br>
+             Resposta correta: <strong>${correta ? correta.letra : "—"}</strong>`;
+
+    }
+
+
+    const explicacao =
+        document.getElementById("explicacaoQuestao");
+
+    explicacao.style.display = "block";
+
+    explicacao.innerHTML = `
+        <h4 style="margin-top:0;">Explicação</h4>
+
+        <p>
+            ${escaparHTML(
+                questaoAtual.explicacao || ""
+            )}
+        </p>
+
+        <h4>Fundamento</h4>
+
+        <p>
+            ${escaparHTML(
+                questaoAtual.fundamento || ""
+            )}
+        </p>
+    `;
+
+
+    document
+        .getElementById("btnProxima")
+        .style.display = "block";
+
+
+    /* REGISTRA A RESPOSTA */
+
+    try {
+
+        const { error } =
+            await supabaseClient
+                .from("respostas")
+                .insert({
+                    perfil_id: perfilAtual,
+                    questao_id: questaoAtual.id,
+                    alternativa_marcada: letraEscolhida,
+                    acertou: !!estavaCorreta
+                });
+
+        if (error) {
+
+            console.error(
+                "Erro ao registrar resposta:",
+                error
+            );
+
+        }
+
+    } catch (erro) {
+
+        console.error(erro);
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   VOLTAR
+   --------------------------------------------------------- */
+
+function voltarConfiguracao() {
+
+    document
+        .getElementById("areaQuestao")
+        .style.display = "none";
+
+    document
+        .getElementById("configEstudo")
+        .style.display = "block";
+
+    document.getElementById(
+        "mensagemEstudo"
+    ).innerHTML = "";
+
+}
+
+
+/* ---------------------------------------------------------
+   SEGURANÇA BÁSICA PARA TEXTO HTML
+   --------------------------------------------------------- */
+
+function escaparHTML(texto) {
+
+    return String(texto || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+</script>
 
 </body>
 </html>
