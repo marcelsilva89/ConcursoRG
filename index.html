@@ -591,9 +591,9 @@ async function carregarDadosIniciais() {
 
     try {
 
-        const { data: perfis, error: erroPerfis } =
-            await supabaseClient
-                .from("perfis")
+      const { data: perfis, error: erroPerfis } =
+    await supabaseClient
+        .from("perfis")
                 .select("id,nome")
                 .eq("ativo", true)
                 .order("nome");
