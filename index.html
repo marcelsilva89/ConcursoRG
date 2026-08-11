@@ -7,45 +7,37 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 body{font-family:Arial,sans-serif;max-width:900px;margin:auto;padding:16px;background:#f4f5f7;color:#172033}
-h1{margin-bottom:4px}.small{font-size:13px;color:#667085}
 .card{background:#fff;padding:18px;border-radius:12px;margin:12px 0}
-label{display:block;font-weight:bold;margin:14px 0 6px}
+label{display:block;font-weight:bold;margin:12px 0 6px}
 select,button{width:100%;padding:12px;border:1px solid #ccd2dc;border-radius:8px;font:inherit}
-button{cursor:pointer;font-weight:bold;margin-top:8px}
-.primary{background:#172033;color:#fff}.secondary{background:#e9edf2;color:#172033}
-.alt{text-align:left;background:#fafafa}.alt.correct{background:#dff4e5;border-color:#39a85b}.alt.wrong{background:#ffe2e2;border-color:#d64545}
+button{cursor:pointer;font-weight:bold;margin-top:8px}.primary{background:#172033;color:#fff}
+.alt{text-align:left;background:#fafafa}.alt.correct{background:#dff4e5}.alt.wrong{background:#ffe2e2}
 .hidden{display:none}.ok{background:#e4f6e9;padding:12px;border-radius:8px}.bad{background:#ffe8e8;padding:12px;border-radius:8px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.small{font-size:13px;color:#667085}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media(max-width:600px){.row{grid-template-columns:1fr}}
-#enunciado{line-height:1.5}.box{padding:14px;background:#f7f8fa;border-radius:10px;margin-top:12px}
 </style>
 </head>
 <body>
-
 <h1>ConcursoRG</h1>
 <div class="small">Banco Gold • uso interno</div>
 
 <div id="config" class="card">
 <h2>Estudar</h2>
-
 <label>Usuário</label>
 <select id="perfil"><option value="">Carregando...</option></select>
-
 <label>Matéria</label>
 <select id="materia"><option value="">Todas</option></select>
-
 <label>Assunto</label>
 <select id="assunto"><option value="">Todos</option></select>
-
 <div class="row">
-<button id="btnEstudar" class="primary">Estudar</button>
-<button id="btnSimulado">Simulado (10)</button>
+<button id="estudar" class="primary" type="button">Estudar</button>
+<button id="simulado" type="button">Simulado (10)</button>
 </div>
-
 <div class="row">
-<button id="btnDesempenho">Meu desempenho</button>
-<button id="btnErros">Meus erros</button>
+<button id="desempenho" type="button">Meu desempenho</button>
+<button id="erros" type="button">Meus erros</button>
 </div>
+<div id="status" class="small" style="margin-top:12px"></div>
 </div>
 
 <div id="questaoBox" class="card hidden">
@@ -54,510 +46,171 @@ button{cursor:pointer;font-weight:bold;margin-top:8px}
 <h2 id="enunciado"></h2>
 <div id="alternativas"></div>
 <div id="resultado" class="hidden"></div>
-<div id="explicacao" class="box hidden"></div>
-<button id="proxima" class="primary hidden">Próxima</button>
-<button id="voltarQuestao" class="secondary">Voltar</button>
+<div id="explicacao" class="card hidden"></div>
+<button id="proxima" class="primary hidden" type="button">Próxima</button>
+<button id="voltar" type="button">Voltar</button>
 </div>
 
 <div id="painel" class="card hidden"></div>
 
 <script>
-/* =========================
-   SUPABASE
-   ========================= */
-const SUPABASE_URL = "https://ajjurecdcxjnqgjjfdgh.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable__SKCRSh1D0MT_d_VYGAS4Q_8vpE4han";
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL="https://ajjurecdcxjnqgjjfdgh.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable__SKCRSh1D0MT_d_VYGAS4Q_8vpE4han";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-/* =========================
-   ESTADO
-   ========================= */
-let perfilAtual = "";
-let materiaAtual = "";
-let assuntoAtual = "";
-let questoes = [];
-let indice = 0;
-let modo = "estudo";
-let questaoAtual = null;
-let alternativasAtuais = [];
-let respondeu = false;
-let simuladoAcertos = 0;
-let simuladoTotal = 10;
+const perfilEl=document.getElementById("perfil");
+const materiaEl=document.getElementById("materia");
+const assuntoEl=document.getElementById("assunto");
+const configEl=document.getElementById("config");
+const questaoBox=document.getElementById("questaoBox");
+const painel=document.getElementById("painel");
+const statusEl=document.getElementById("status");
+const metaEl=document.getElementById("meta");
+const contadorEl=document.getElementById("contador");
+const enunciadoEl=document.getElementById("enunciado");
+const alternativasEl=document.getElementById("alternativas");
+const resultadoEl=document.getElementById("resultado");
+const explicacaoEl=document.getElementById("explicacao");
+const proximaEl=document.getElementById("proxima");
 
-/* =========================
-   ELEMENTOS
-   ========================= */
-const perfil = document.getElementById("perfil");
-const materia = document.getElementById("materia");
-const assunto = document.getElementById("assunto");
-const config = document.getElementById("config");
-const questaoBox = document.getElementById("questaoBox");
-const painel = document.getElementById("painel");
-const meta = document.getElementById("meta");
-const contador = document.getElementById("contador");
-const enunciado = document.getElementById("enunciado");
-const alternativas = document.getElementById("alternativas");
-const resultado = document.getElementById("resultado");
-const explicacao = document.getElementById("explicacao");
-const proxima = document.getElementById("proxima");
+let perfilAtual="",materiaAtual="",assuntoAtual="";
+let questoes=[],indice=0,modo="estudo",respondida=false;
+let alternativasAtuais=[],questaoAtual=null,simAcertos=0;
 
-/* =========================
-   INÍCIO
-   ========================= */
-document.addEventListener("DOMContentLoaded", carregarBase);
+function msg(t){statusEl.textContent=t}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 
-async function carregarBase(){
-  try{
-    const p = await supabaseClient
-      .from("perfis")
-      .select("id,nome")
-      .eq("ativo",true)
-      .order("nome");
+async function init(){
+ try{
+  const p=await sb.from("perfis").select("id,nome").eq("ativo",true).order("nome");
+  if(p.error)throw p.error;
+  perfilEl.innerHTML='<option value="">Selecione</option>';
+  (p.data||[]).forEach(x=>perfilEl.innerHTML+=`<option value="${x.id}">${esc(x.nome)}</option>`);
 
-    if(p.error) throw p.error;
-
-    perfil.innerHTML = '<option value="">Selecione o usuário</option>';
-    (p.data||[]).forEach(x=>{
-      perfil.innerHTML += `<option value="${x.id}">${esc(x.nome)}</option>`;
-    });
-
-    const m = await supabaseClient
-      .from("materias")
-      .select("id,nome,ordem")
-      .order("ordem");
-
-    if(m.error) throw m.error;
-
-    materia.innerHTML = '<option value="">Todas as matérias</option>';
-    (m.data||[]).forEach(x=>{
-      materia.innerHTML += `<option value="${x.id}">${esc(x.nome)}</option>`;
-    });
-  }catch(e){
-    alert("Erro ao carregar o banco:\n\n"+(e.message||e));
-  }
+  const m=await sb.from("materias").select("id,nome,ordem").order("ordem");
+  if(m.error)throw m.error;
+  materiaEl.innerHTML='<option value="">Todas</option>';
+  (m.data||[]).forEach(x=>materiaEl.innerHTML+=`<option value="${x.id}">${esc(x.nome)}</option>`);
+  msg("Banco conectado.");
+ }catch(e){msg("Erro ao conectar: "+(e.message||e))}
 }
 
-materia.addEventListener("change", carregarAssuntos);
-
-async function carregarAssuntos(){
-  assunto.innerHTML = '<option value="">Todos os assuntos</option>';
-  if(!materia.value) return;
-
-  const r = await supabaseClient
-    .from("assuntos")
-    .select("id,nome")
-    .eq("materia_id",materia.value)
-    .order("nome");
-
-  if(r.error){ alert(r.error.message); return; }
-
-  (r.data||[]).forEach(x=>{
-    assunto.innerHTML += `<option value="${x.id}">${esc(x.nome)}</option>`;
-  });
+async function assuntos(){
+ assuntoEl.innerHTML='<option value="">Todos</option>';
+ if(!materiaEl.value)return;
+ const r=await sb.from("assuntos").select("id,nome").eq("materia_id",materiaEl.value).order("nome");
+ if(r.error){msg("Erro nos assuntos: "+r.error.message);return}
+ (r.data||[]).forEach(x=>assuntoEl.innerHTML+=`<option value="${x.id}">${esc(x.nome)}</option>`);
 }
 
-/* =========================
-   BUSCA QUESTÕES
-   Importante: carregamos TODA a lista elegível
-   e embaralhamos no navegador. Assim "Próxima"
-   nunca depende de offset/paginação.
-   ========================= */
-async function buscarQuestoes(){
-  let q = supabaseClient
-    .from("questoes")
-    .select(`
-      id,
-      id_curadoria,
-      enunciado,
-      explicacao,
-      fundamento,
-      dificuldade,
-      assunto_id,
-      assuntos!inner(
-        id,
-        nome,
-        materia_id,
-        materias!inner(
-          id,
-          nome
-        )
-      )
-    `)
-    .eq("ativa",true)
-    .eq("status_revisao","aprovada_gold");
+async function buscar(){
+ let ids=null;
+ if(materiaAtual){
+  const a=await sb.from("assuntos").select("id").eq("materia_id",materiaAtual);
+  if(a.error)throw a.error;
+  ids=(a.data||[]).map(x=>x.id);
+  if(!ids.length)return[];
+ }
+ if(assuntoAtual)ids=[assuntoAtual];
 
-  if(materiaAtual){
-    q = q.eq("assuntos.materia_id",materiaAtual);
-  }
-
-  if(assuntoAtual){
-    q = q.eq("assunto_id",assuntoAtual);
-  }
-
-  const r = await q;
-  if(r.error) throw r.error;
-
-  return r.data || [];
+ let q=sb.from("questoes").select("id,id_curadoria,enunciado,explicacao,fundamento,dificuldade,assunto_id,assuntos(id,nome,materia_id,materias(id,nome))").eq("ativa",true).eq("status_revisao","aprovada_gold");
+ if(ids)q=q.in("assunto_id",ids);
+ const r=await q;
+ if(r.error)throw r.error;
+ return r.data||[];
 }
 
-/* =========================
-   ESTUDO
-   ========================= */
-document.getElementById("btnEstudar").addEventListener("click", iniciarEstudo);
+function embaralhar(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
 
-async function iniciarEstudo(){
-  if(!perfil.value){ alert("Selecione o usuário."); return; }
-
-  perfilAtual = perfil.value;
-  materiaAtual = materia.value;
-  assuntoAtual = assunto.value;
-  modo = "estudo";
-
-  try{
-    questoes = await buscarQuestoes();
-    embaralhar(questoes);
-    indice = 0;
-
-    if(!questoes.length){
-      alert("Não há questões disponíveis para esse filtro.");
-      return;
-    }
-
-    abrirQuestoes();
-    mostrarQuestao();
-  }catch(e){
-    alert("Erro ao buscar questões:\n\n"+(e.message||e));
-  }
+async function iniciar(tipo){
+ if(!perfilEl.value){msg("Selecione o usuário.");return}
+ perfilAtual=perfilEl.value;materiaAtual=materiaEl.value;assuntoAtual=assuntoEl.value;modo=tipo;
+ msg("Carregando questões...");
+ try{
+  questoes=await buscar();
+  embaralhar(questoes);
+  if(tipo==="simulado")questoes=questoes.slice(0,Math.min(10,questoes.length));
+  indice=0;simAcertos=0;
+  if(!questoes.length){msg("Não há questões disponíveis para esse filtro.");return}
+  configEl.classList.add("hidden");painel.classList.add("hidden");questaoBox.classList.remove("hidden");
+  await mostrar();
+ }catch(e){msg("Erro ao carregar questões: "+(e.message||e))}
 }
 
-/* =========================
-   SIMULADO
-   ========================= */
-document.getElementById("btnSimulado").addEventListener("click", iniciarSimulado);
-
-async function iniciarSimulado(){
-  if(!perfil.value){ alert("Selecione o usuário."); return; }
-
-  perfilAtual = perfil.value;
-  materiaAtual = materia.value;
-  assuntoAtual = assunto.value;
-  modo = "simulado";
-
-  try{
-    const todas = await buscarQuestoes();
-    embaralhar(todas);
-    questoes = todas.slice(0, Math.min(simuladoTotal,todas.length));
-    indice = 0;
-    simuladoAcertos = 0;
-
-    if(!questoes.length){
-      alert("Não há questões disponíveis para esse filtro.");
-      return;
-    }
-
-    abrirQuestoes();
-    mostrarQuestao();
-  }catch(e){
-    alert("Erro ao iniciar simulado:\n\n"+(e.message||e));
-  }
+async function mostrar(){
+ respondida=false;resultadoEl.className="hidden";resultadoEl.innerHTML="";explicacaoEl.classList.add("hidden");proximaEl.classList.add("hidden");proximaEl.textContent="Próxima";
+ questaoAtual=questoes[indice];
+ metaEl.textContent=questaoAtual.assuntos.materias.nome+" • "+questaoAtual.assuntos.nome;
+ contadorEl.textContent=(modo==="simulado"?"Simulado ":"Estudo ")+"— questão "+(indice+1)+"/"+questoes.length;
+ enunciadoEl.textContent=questaoAtual.enunciado;
+ alternativasEl.textContent="Carregando alternativas...";
+ const a=await sb.from("alternativas").select("id,letra,texto,correta,ordem").eq("questao_id",questaoAtual.id).order("ordem");
+ if(a.error){msg("Erro nas alternativas: "+a.error.message);return}
+ alternativasAtuais=a.data||[];alternativasEl.innerHTML="";
+ alternativasAtuais.forEach(x=>{
+  const b=document.createElement("button");b.type="button";b.className="alt";b.innerHTML="<b>"+x.letra+")</b> "+esc(x.texto);b.onclick=()=>responder(x.letra);alternativasEl.appendChild(b);
+ });
 }
 
-/* =========================
-   ABRIR ÁREA
-   ========================= */
-function abrirQuestoes(){
-  config.classList.add("hidden");
-  painel.classList.add("hidden");
-  questaoBox.classList.remove("hidden");
-}
-
-/* =========================
-   MOSTRAR QUESTÃO
-   ========================= */
-async function mostrarQuestao(){
-  respondeu = false;
-  resultado.className = "hidden";
-  resultado.innerHTML = "";
-  explicacao.classList.add("hidden");
-  explicacao.innerHTML = "";
-  proxima.classList.add("hidden");
-  proxima.textContent = "Próxima";
-
-  questaoAtual = questoes[indice];
-
-  if(!questaoAtual){
-    finalizarSimulado();
-    return;
-  }
-
-  const materiaNome = questaoAtual.assuntos.materias.nome;
-  const assuntoNome = questaoAtual.assuntos.nome;
-
-  meta.textContent =
-    materiaNome+" • "+assuntoNome+
-    (questaoAtual.dificuldade ? " • "+questaoAtual.dificuldade : "");
-
-  contador.textContent =
-    (modo==="simulado" ? "Simulado: " : "Estudo: ") +
-    "Questão "+(indice+1)+
-    (modo==="simulado" ? "/"+questoes.length : "");
-
-  enunciado.textContent = questaoAtual.enunciado;
-  alternativas.innerHTML = "Carregando alternativas...";
-
-  const r = await supabaseClient
-    .from("alternativas")
-    .select("id,letra,texto,correta,ordem")
-    .eq("questao_id",questaoAtual.id)
-    .order("ordem");
-
-  if(r.error){
-    alert(r.error.message);
-    return;
-  }
-
-  alternativasAtuais = r.data || [];
-  alternativas.innerHTML = "";
-
-  alternativasAtuais.forEach(a=>{
-    const b = document.createElement("button");
-    b.className = "alt";
-    b.innerHTML = "<b>"+esc(a.letra)+")</b> "+esc(a.texto);
-    b.addEventListener("click",()=>responder(a.letra));
-    alternativas.appendChild(b);
-  });
-}
-
-/* =========================
-   RESPONDER
-   ========================= */
 async function responder(letra){
-  if(respondeu) return;
-  respondeu = true;
-
-  const correta = alternativasAtuais.find(a=>a.correta===true);
-  const acertou = !!correta && correta.letra===letra;
-
-  Array.from(alternativas.children).forEach((b,i)=>{
-    const a = alternativasAtuais[i];
-    b.disabled = true;
-
-    if(a.correta) b.classList.add("correct");
-    if(a.letra===letra && !a.correta) b.classList.add("wrong");
-  });
-
-  if(acertou){
-    resultado.className = "ok";
-    resultado.innerHTML = "<b>✓ CORRETA</b>";
-  }else{
-    resultado.className = "bad";
-    resultado.innerHTML =
-      "<b>✗ INCORRETA</b><br>Gabarito: "+
-      (correta ? correta.letra : "—");
-  }
-
-  explicacao.innerHTML =
-    "<h3>Explicação</h3><p>"+
-    esc(questaoAtual.explicacao || "Sem explicação cadastrada.")+
-    "</p><h3>Fundamento</h3><p>"+
-    esc(questaoAtual.fundamento || "Sem fundamento cadastrado.")+
-    "</p>";
-
-  explicacao.classList.remove("hidden");
-  proxima.classList.remove("hidden");
-
-  if(modo==="simulado" && acertou) simuladoAcertos++;
-
-  const r = await supabaseClient
-    .from("respostas")
-    .insert({
-      perfil_id: perfilAtual,
-      questao_id: questaoAtual.id,
-      alternativa_marcada: letra,
-      acertou: acertou
-    });
-
-  if(r.error){
-    console.warn("Erro ao registrar resposta:",r.error);
-  }
-
-  if(modo==="simulado" && indice===questoes.length-1){
-    proxima.textContent = "Ver resultado";
-  }
+ if(respondida)return;respondida=true;
+ const correta=alternativasAtuais.find(x=>x.correta===true),acertou=!!correta&&correta.letra===letra;
+ Array.from(alternativasEl.children).forEach((b,i)=>{b.disabled=true;if(alternativasAtuais[i].correta)b.classList.add("correct");if(alternativasAtuais[i].letra===letra&&!alternativasAtuais[i].correta)b.classList.add("wrong")});
+ resultadoEl.className=acertou?"ok":"bad";resultadoEl.innerHTML=acertou?"<b>✓ CORRETA</b>":"<b>✗ INCORRETA</b><br>Gabarito: "+(correta?correta.letra:"—");
+ explicacaoEl.innerHTML="<h3>Explicação</h3><p>"+esc(questaoAtual.explicacao||"Sem explicação cadastrada.")+"</p><h3>Fundamento</h3><p>"+esc(questaoAtual.fundamento||"Sem fundamento cadastrado.")+"</p>";explicacaoEl.classList.remove("hidden");proximaEl.classList.remove("hidden");
+ if(modo==="simulado"&&acertou)simAcertos++;
+ const r=await sb.from("respostas").insert({perfil_id:perfilAtual,questao_id:questaoAtual.id,alternativa_marcada:letra,acertou:!!acertou});
+ if(r.error)console.warn(r.error);
+ if(modo==="simulado"&&indice===questoes.length-1)proximaEl.textContent="Resultado";
 }
 
-/* =========================
-   PRÓXIMA
-   ========================= */
-proxima.addEventListener("click", proximaQuestao);
-
-async function proximaQuestao(){
-  indice++;
-
-  if(modo==="simulado"){
-    if(indice>=questoes.length){
-      finalizarSimulado();
-      return;
-    }
-  }else{
-    if(indice>=questoes.length){
-      embaralhar(questoes);
-      indice = 0;
-    }
-  }
-
-  await mostrarQuestao();
+async function proxima(){
+ indice++;
+ if(indice>=questoes.length){
+  if(modo==="simulado"){resultadoSimulado();return}
+  embaralhar(questoes);indice=0;
+ }
+ await mostrar();
 }
 
-/* =========================
-   RESULTADO SIMULADO
-   ========================= */
-function finalizarSimulado(){
-  questaoBox.classList.add("hidden");
-  painel.classList.remove("hidden");
-
-  const total = questoes.length;
-  const percentual = total
-    ? Math.round(simuladoAcertos/total*100)
-    : 0;
-
-  painel.innerHTML =
-    "<h2>Resultado do simulado</h2>"+
-    "<p>Acertos: <b>"+simuladoAcertos+
-    "</b> de "+total+"</p>"+
-    "<p>Aproveitamento: <b>"+percentual+"%</b></p>"+
-    "<button class='primary' onclick='voltar()'>Voltar</button>";
+function resultadoSimulado(){
+ questaoBox.classList.add("hidden");painel.classList.remove("hidden");
+ const total=questoes.length,p=total?Math.round(simAcertos/total*100):0;
+ painel.innerHTML="<h2>Resultado</h2><p>Acertos: <b>"+simAcertos+"</b> de "+total+"</p><p>Aproveitamento: <b>"+p+"%</b></p><button onclick='voltar()'>Voltar</button>";
 }
 
-/* =========================
-   DESEMPENHO
-   ========================= */
-document.getElementById("btnDesempenho")
-.addEventListener("click", mostrarDesempenho);
-
-async function mostrarDesempenho(){
-  if(!perfil.value){ alert("Selecione o usuário."); return; }
-
-  const r = await supabaseClient
-    .from("respostas")
-    .select("acertou,respondida_em")
-    .eq("perfil_id",perfil.value);
-
-  if(r.error){ alert(r.error.message); return; }
-
-  const total = r.data.length;
-  const acertos = r.data.filter(x=>x.acertou).length;
-  const erros = total-acertos;
-  const percentual = total
-    ? Math.round(acertos/total*100)
-    : 0;
-
-  config.classList.add("hidden");
-  questaoBox.classList.add("hidden");
-  painel.classList.remove("hidden");
-
-  painel.innerHTML =
-    "<h2>Meu desempenho</h2>"+
-    "<p>Respondidas: <b>"+total+"</b></p>"+
-    "<p>Acertos: <b>"+acertos+"</b></p>"+
-    "<p>Erros: <b>"+erros+"</b></p>"+
-    "<p>Aproveitamento: <b>"+percentual+"%</b></p>"+
-    "<button onclick='voltar()'>Voltar</button>";
+async function desempenho(){
+ if(!perfilEl.value){msg("Selecione o usuário.");return}
+ const r=await sb.from("respostas").select("acertou").eq("perfil_id",perfilEl.value);
+ if(r.error){msg(r.error.message);return}
+ const total=r.data.length,ac=r.data.filter(x=>x.acertou).length;
+ configEl.classList.add("hidden");questaoBox.classList.add("hidden");painel.classList.remove("hidden");
+ painel.innerHTML="<h2>Meu desempenho</h2><p>Respondidas: <b>"+total+"</b></p><p>Acertos: <b>"+ac+"</b></p><p>Erros: <b>"+(total-ac)+"</b></p><p>Aproveitamento: <b>"+(total?Math.round(ac/total*100):0)+"%</b></p><button onclick='voltar()'>Voltar</button>";
 }
 
-/* =========================
-   MEUS ERROS
-   ========================= */
-document.getElementById("btnErros")
-.addEventListener("click", mostrarErros);
-
-async function mostrarErros(){
-  if(!perfil.value){ alert("Selecione o usuário."); return; }
-
-  const r = await supabaseClient
-    .from("respostas")
-    .select("questao_id,respondida_em")
-    .eq("perfil_id",perfil.value)
-    .eq("acertou",false)
-    .order("respondida_em",{ascending:false});
-
-  if(r.error){ alert(r.error.message); return; }
-
-  const ids = [...new Set((r.data||[]).map(x=>x.questao_id))];
-
-  config.classList.add("hidden");
-  questaoBox.classList.add("hidden");
-  painel.classList.remove("hidden");
-
-  if(!ids.length){
-    painel.innerHTML =
-      "<h2>Meus erros</h2>"+
-      "<p>Nenhum erro registrado.</p>"+
-      "<button onclick='voltar()'>Voltar</button>";
-    return;
-  }
-
-  const q = await supabaseClient
-    .from("questoes")
-    .select("id,enunciado,assuntos(nome,materias(nome))")
-    .in("id",ids);
-
-  if(q.error){ alert(q.error.message); return; }
-
-  const porId = {};
-  (q.data||[]).forEach(x=>porId[x.id]=x);
-
-  painel.innerHTML =
-    "<h2>Meus erros</h2>"+
-    ids.map((id,i)=>{
-      const x = porId[id];
-      if(!x) return "";
-      return "<div class='card'>"+
-        "<b>"+(i+1)+". "+
-        esc(x.assuntos.materias.nome)+
-        " • "+
-        esc(x.assuntos.nome)+
-        "</b><p>"+
-        esc(x.enunciado)+
-        "</p></div>";
-    }).join("")+
-    "<button onclick='voltar()'>Voltar</button>";
+async function erros(){
+ if(!perfilEl.value){msg("Selecione o usuário.");return}
+ const r=await sb.from("respostas").select("questao_id,respondida_em").eq("perfil_id",perfilEl.value).eq("acertou",false).order("respondida_em",{ascending:false});
+ if(r.error){msg(r.error.message);return}
+ const ids=[...new Set((r.data||[]).map(x=>x.questao_id))];
+ configEl.classList.add("hidden");questaoBox.classList.add("hidden");painel.classList.remove("hidden");
+ if(!ids.length){painel.innerHTML="<h2>Meus erros</h2><p>Nenhum erro registrado.</p><button onclick='voltar()'>Voltar</button>";return}
+ const q=await sb.from("questoes").select("id,enunciado,assuntos(nome,materias(nome))").in("id",ids);
+ if(q.error){msg(q.error.message);return}
+ painel.innerHTML="<h2>Meus erros</h2>"+q.data.map((x,i)=>"<div class='card'><b>"+(i+1)+". "+esc(x.assuntos.materias.nome)+" • "+esc(x.assuntos.nome)+"</b><p>"+esc(x.enunciado)+"</p></div>").join("")+"<button onclick='voltar()'>Voltar</button>";
 }
 
-/* =========================
-   VOLTAR
-   ========================= */
-document.getElementById("voltarQuestao")
-.addEventListener("click", voltar);
+function voltar(){questaoBox.classList.add("hidden");painel.classList.add("hidden");configEl.classList.remove("hidden");msg("Banco conectado.")}
 
-function voltar(){
-  questaoBox.classList.add("hidden");
-  painel.classList.add("hidden");
-  config.classList.remove("hidden");
-}
+document.getElementById("estudar").onclick=()=>iniciar("estudo");
+document.getElementById("simulado").onclick=()=>iniciar("simulado");
+document.getElementById("proxima").onclick=proxima;
+document.getElementById("voltar").onclick=voltar;
+document.getElementById("desempenho").onclick=desempenho;
+document.getElementById("erros").onclick=erros;
+materiaEl.onchange=assuntos;
 
-/* =========================
-   EMBARALHAR
-   ========================= */
-function embaralhar(array){
-  for(let i=array.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [array[i],array[j]]=[array[j],array[i]];
-  }
-}
-
-/* =========================
-   ESCAPAR HTML
-   ========================= */
-function esc(texto){
-  return String(texto??"").replace(/[&<>"']/g,c=>({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#039;"
-  })[c]);
-}
+init();
 </script>
 </body>
 </html>
