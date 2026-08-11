@@ -1,216 +1,1854 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ConcursoRG</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-body{font-family:Arial,sans-serif;max-width:900px;margin:auto;padding:16px;background:#f4f5f7;color:#172033}
-.card{background:#fff;padding:18px;border-radius:12px;margin:12px 0}
-label{display:block;font-weight:bold;margin:12px 0 6px}
-select,button{width:100%;padding:12px;border:1px solid #ccd2dc;border-radius:8px;font:inherit}
-button{cursor:pointer;font-weight:bold;margin-top:8px}.primary{background:#172033;color:#fff}
-.alt{text-align:left;background:#fafafa}.alt.correct{background:#dff4e5}.alt.wrong{background:#ffe2e2}
-.hidden{display:none}.ok{background:#e4f6e9;padding:12px;border-radius:8px}.bad{background:#ffe8e8;padding:12px;border-radius:8px}
-.small{font-size:13px;color:#667085}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-@media(max-width:600px){.row{grid-template-columns:1fr}}
+body{
+    font-family:Arial,sans-serif;
+    max-width:900px;
+    margin:20px auto;
+    padding:15px;
+    background:#f4f4f4;
+    color:#222;
+}
+
+.box{
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+select,
+button{
+    width:100%;
+    padding:13px;
+    margin:7px 0;
+    font-size:16px;
+    box-sizing:border-box;
+}
+
+button{
+    cursor:pointer;
+}
+
+.correct{
+    background:#d8f3dc!important;
+}
+
+.wrong{
+    background:#ffd6d6!important;
+}
+
+.hidden{
+    display:none;
+}
+
+.status{
+    padding:10px;
+    background:#eef2f7;
+    border-radius:6px;
+    margin-top:10px;
+}
 </style>
 </head>
+
 <body>
+
 <h1>ConcursoRG</h1>
-<div class="small">Banco Gold • uso interno</div>
 
-<div id="config" class="card">
+
+<div id="inicio" class="box">
+
 <h2>Estudar</h2>
+
+
 <label>Usuário</label>
-<select id="perfil"><option value="">Carregando...</option></select>
+
+<select id="perfilSelect">
+
+<option value="">
+Carregando usuários...
+</option>
+
+</select>
+
+
+
 <label>Matéria</label>
-<select id="materia"><option value="">Todas</option></select>
+
+<select
+    id="materiaSelect"
+    onchange="carregarAssuntos()">
+
+<option value="">
+Todas as matérias
+</option>
+
+</select>
+
+
+
 <label>Assunto</label>
-<select id="assunto"><option value="">Todos</option></select>
-<div class="row">
-<button id="estudar" class="primary" type="button">Estudar</button>
-<button id="simulado" type="button">Simulado (10)</button>
-</div>
-<div class="row">
-<button id="desempenho" type="button">Meu desempenho</button>
-<button id="erros" type="button">Meus erros</button>
-</div>
-<div id="status" class="small" style="margin-top:12px"></div>
+
+<select id="assuntoSelect">
+
+<option value="">
+Todos os assuntos
+</option>
+
+</select>
+
+
+
+<button
+    type="button"
+    onclick="iniciarEstudo()">
+
+ESTUDAR
+
+</button>
+
+
+
+<button
+    type="button"
+    onclick="iniciarSimulado()">
+
+SIMULADO - 10 QUESTÕES
+
+</button>
+
+
+
+<button
+    type="button"
+    onclick="mostrarDesempenho()">
+
+MEU DESEMPENHO
+
+</button>
+
+
+
+<button
+    type="button"
+    onclick="mostrarErros()">
+
+MEUS ERROS
+
+</button>
+
+
+
+<div
+    id="status"
+    class="status">
+
+Inicializando...
+
 </div>
 
-<div id="questaoBox" class="card hidden">
-<div id="meta" class="small"></div>
-<div id="contador" class="small"></div>
+</div>
+
+
+
+<div
+    id="questao"
+    class="box hidden">
+
+<div id="info"></div>
+
+<div id="contador"></div>
+
+<hr>
+
 <h2 id="enunciado"></h2>
+
 <div id="alternativas"></div>
-<div id="resultado" class="hidden"></div>
-<div id="explicacao" class="card hidden"></div>
-<button id="proxima" class="primary hidden" type="button">Próxima</button>
-<button id="voltar" type="button">Voltar</button>
+
+<div id="resultado"></div>
+
+<div id="explicacao"></div>
+
+
+
+<button
+    id="btnProxima"
+    type="button"
+    onclick="proximaQuestao()"
+    class="hidden">
+
+PRÓXIMA
+
+</button>
+
+
+
+<button
+    type="button"
+    onclick="voltarInicio()">
+
+VOLTAR
+
+</button>
+
 </div>
 
-<div id="painel" class="card hidden"></div>
+
+
+<div
+    id="painel"
+    class="box hidden">
+
+</div>
+
+
 
 <script>
-const SUPABASE_URL="https://ajjurecdcxjnqgjjfdgh.supabase.co";
-const SUPABASE_ANON_KEY="sb_publishable__SKCRSh1D0MT_d_VYGAS4Q_8vpE4han";
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-const perfilEl=document.getElementById("perfil");
-const materiaEl=document.getElementById("materia");
-const assuntoEl=document.getElementById("assunto");
-const configEl=document.getElementById("config");
-const questaoBox=document.getElementById("questaoBox");
-const painel=document.getElementById("painel");
-const statusEl=document.getElementById("status");
-const metaEl=document.getElementById("meta");
-const contadorEl=document.getElementById("contador");
-const enunciadoEl=document.getElementById("enunciado");
-const alternativasEl=document.getElementById("alternativas");
-const resultadoEl=document.getElementById("resultado");
-const explicacaoEl=document.getElementById("explicacao");
-const proximaEl=document.getElementById("proxima");
 
-let perfilAtual="",materiaAtual="",assuntoAtual="";
-let questoes=[],indice=0,modo="estudo",respondida=false;
-let alternativasAtuais=[],questaoAtual=null,simAcertos=0;
+/* =========================================================
+   SUPABASE
+   ========================================================= */
 
-function msg(t){statusEl.textContent=t}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+const SUPABASE_URL =
+    "https://ajjurecdcxjnqgjjfdgh.supabase.co";
 
-async function init(){
- try{
-  const p=await sb.from("perfis").select("id,nome").eq("ativo",true).order("nome");
-  if(p.error)throw p.error;
-  perfilEl.innerHTML='<option value="">Selecione</option>';
-  (p.data||[]).forEach(x=>perfilEl.innerHTML+=`<option value="${x.id}">${esc(x.nome)}</option>`);
 
-  const m=await sb.from("materias").select("id,nome,ordem").order("ordem");
-  if(m.error)throw m.error;
-  materiaEl.innerHTML='<option value="">Todas</option>';
-  (m.data||[]).forEach(x=>materiaEl.innerHTML+=`<option value="${x.id}">${esc(x.nome)}</option>`);
-  msg("Banco conectado.");
- }catch(e){msg("Erro ao conectar: "+(e.message||e))}
+const SUPABASE_ANON_KEY =
+    "sb_publishable__SKCRSh1D0MT_d_VYGAS4Q_8vpE4han";
+
+
+/* =========================================================
+   CONEXÃO
+   ========================================================= */
+
+let db;
+
+
+/* =========================================================
+   ESTADO
+   ========================================================= */
+
+let perfilAtual = "";
+
+let materiaAtual = "";
+
+let assuntoAtual = "";
+
+let lista = [];
+
+let posicao = 0;
+
+let modo = "estudo";
+
+let respostaDada = false;
+
+let acertosSimulado = 0;
+
+let alternativas = [];
+
+let questaoAtual = null;
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+function status(texto){
+
+    document
+        .getElementById("status")
+        .textContent = texto;
+
 }
 
-async function assuntos(){
- assuntoEl.innerHTML='<option value="">Todos</option>';
- if(!materiaEl.value)return;
- const r=await sb.from("assuntos").select("id,nome").eq("materia_id",materiaEl.value).order("nome");
- if(r.error){msg("Erro nos assuntos: "+r.error.message);return}
- (r.data||[]).forEach(x=>assuntoEl.innerHTML+=`<option value="${x.id}">${esc(x.nome)}</option>`);
+
+/* =========================================================
+   ESCAPAR HTML
+   ========================================================= */
+
+function escapeHTML(texto){
+
+    return String(texto ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
 }
 
-async function buscar(){
- let ids=null;
- if(materiaAtual){
-  const a=await sb.from("assuntos").select("id").eq("materia_id",materiaAtual);
-  if(a.error)throw a.error;
-  ids=(a.data||[]).map(x=>x.id);
-  if(!ids.length)return[];
- }
- if(assuntoAtual)ids=[assuntoAtual];
 
- let q=sb.from("questoes").select("id,id_curadoria,enunciado,explicacao,fundamento,dificuldade,assunto_id,assuntos(id,nome,materia_id,materias(id,nome))").eq("ativa",true).eq("status_revisao","aprovada_gold");
- if(ids)q=q.in("assunto_id",ids);
- const r=await q;
- if(r.error)throw r.error;
- return r.data||[];
+/* =========================================================
+   EMBARALHAR
+   ========================================================= */
+
+function embaralhar(arr){
+
+    for(
+        let i = arr.length - 1;
+        i > 0;
+        i--
+    ){
+
+        const j =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
+
+
+        [
+            arr[i],
+            arr[j]
+        ] =
+        [
+            arr[j],
+            arr[i]
+        ];
+
+    }
+
 }
 
-function embaralhar(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
 
-async function iniciar(tipo){
- if(!perfilEl.value){msg("Selecione o usuário.");return}
- perfilAtual=perfilEl.value;materiaAtual=materiaEl.value;assuntoAtual=assuntoEl.value;modo=tipo;
- msg("Carregando questões...");
- try{
-  questoes=await buscar();
-  embaralhar(questoes);
-  if(tipo==="simulado")questoes=questoes.slice(0,Math.min(10,questoes.length));
-  indice=0;simAcertos=0;
-  if(!questoes.length){msg("Não há questões disponíveis para esse filtro.");return}
-  configEl.classList.add("hidden");painel.classList.add("hidden");questaoBox.classList.remove("hidden");
-  await mostrar();
- }catch(e){msg("Erro ao carregar questões: "+(e.message||e))}
+/* =========================================================
+   INICIALIZAÇÃO
+   ========================================================= */
+
+async function inicializar(){
+
+    try{
+
+        if(
+            SUPABASE_URL.includes("COLE_AQUI") ||
+            SUPABASE_ANON_KEY.includes("COLE_AQUI")
+        ){
+
+            status(
+                "ERRO: ainda faltam a API URL e a Publishable Key."
+            );
+
+            return;
+
+        }
+
+
+        db =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_ANON_KEY
+            );
+
+
+        /* =========================
+           USUÁRIOS
+           ========================= */
+
+        const perfis =
+            await db
+                .from("perfis")
+                .select("id,nome")
+                .eq("ativo",true)
+                .order("nome");
+
+
+        if(perfis.error){
+
+            throw perfis.error;
+
+        }
+
+
+        const ps =
+            document.getElementById(
+                "perfilSelect"
+            );
+
+
+        ps.innerHTML =
+            '<option value="">Selecione o usuário</option>';
+
+
+        (perfis.data || []).forEach(
+            p => {
+
+                ps.innerHTML +=
+                    '<option value="' +
+                    p.id +
+                    '">' +
+                    escapeHTML(p.nome) +
+                    '</option>';
+
+            }
+        );
+
+
+        /* =========================
+           MATÉRIAS
+           ========================= */
+
+        const materias =
+            await db
+                .from("materias")
+                .select("id,nome,ordem")
+                .order("ordem");
+
+
+        if(materias.error){
+
+            throw materias.error;
+
+        }
+
+
+        const ms =
+            document.getElementById(
+                "materiaSelect"
+            );
+
+
+        ms.innerHTML =
+            '<option value="">Todas as matérias</option>';
+
+
+        (materias.data || []).forEach(
+            m => {
+
+                ms.innerHTML +=
+                    '<option value="' +
+                    m.id +
+                    '">' +
+                    escapeHTML(m.nome) +
+                    '</option>';
+
+            }
+        );
+
+
+        status(
+            "Banco conectado. Pronto para estudar."
+        );
+
+
+    }catch(e){
+
+        status(
+            "ERRO DE CONEXÃO: " +
+            (e.message || String(e))
+        );
+
+    }
+
 }
 
-async function mostrar(){
- respondida=false;resultadoEl.className="hidden";resultadoEl.innerHTML="";explicacaoEl.classList.add("hidden");proximaEl.classList.add("hidden");proximaEl.textContent="Próxima";
- questaoAtual=questoes[indice];
- metaEl.textContent=questaoAtual.assuntos.materias.nome+" • "+questaoAtual.assuntos.nome;
- contadorEl.textContent=(modo==="simulado"?"Simulado ":"Estudo ")+"— questão "+(indice+1)+"/"+questoes.length;
- enunciadoEl.textContent=questaoAtual.enunciado;
- alternativasEl.textContent="Carregando alternativas...";
- const a=await sb.from("alternativas").select("id,letra,texto,correta,ordem").eq("questao_id",questaoAtual.id).order("ordem");
- if(a.error){msg("Erro nas alternativas: "+a.error.message);return}
- alternativasAtuais=a.data||[];alternativasEl.innerHTML="";
- alternativasAtuais.forEach(x=>{
-  const b=document.createElement("button");b.type="button";b.className="alt";b.innerHTML="<b>"+x.letra+")</b> "+esc(x.texto);b.onclick=()=>responder(x.letra);alternativasEl.appendChild(b);
- });
+
+/* =========================================================
+   ASSUNTOS
+   ========================================================= */
+
+async function carregarAssuntos(){
+
+    const materia =
+        document.getElementById(
+            "materiaSelect"
+        ).value;
+
+
+    const select =
+        document.getElementById(
+            "assuntoSelect"
+        );
+
+
+    select.innerHTML =
+        '<option value="">Todos os assuntos</option>';
+
+
+    if(!materia){
+
+        return;
+
+    }
+
+
+    try{
+
+        const r =
+            await db
+                .from("assuntos")
+                .select("id,nome")
+                .eq(
+                    "materia_id",
+                    materia
+                )
+                .order("nome");
+
+
+        if(r.error){
+
+            throw r.error;
+
+        }
+
+
+        (r.data || []).forEach(
+            a => {
+
+                select.innerHTML +=
+                    '<option value="' +
+                    a.id +
+                    '">' +
+                    escapeHTML(a.nome) +
+                    '</option>';
+
+            }
+        );
+
+
+    }catch(e){
+
+        alert(
+            "Erro ao carregar assuntos: " +
+            e.message
+        );
+
+    }
+
 }
+
+
+/* =========================================================
+   BUSCAR QUESTÕES
+   ========================================================= */
+
+async function obterQuestoes(){
+
+    let assuntoIds = [];
+
+
+    /* =========================
+       ASSUNTO ESPECÍFICO
+       ========================= */
+
+    if(assuntoAtual){
+
+        assuntoIds = [
+            assuntoAtual
+        ];
+
+    }
+
+    /* =========================
+       MATÉRIA
+       ========================= */
+
+    else{
+
+        let aQuery =
+            db
+                .from("assuntos")
+                .select("id");
+
+
+        if(materiaAtual){
+
+            aQuery =
+                aQuery.eq(
+                    "materia_id",
+                    materiaAtual
+                );
+
+        }
+
+
+        const a =
+            await aQuery;
+
+
+        if(a.error){
+
+            throw a.error;
+
+        }
+
+
+        assuntoIds =
+            (a.data || []).map(
+                x => x.id
+            );
+
+    }
+
+
+    if(!assuntoIds.length){
+
+        return [];
+
+    }
+
+
+    /* =========================
+       QUESTÕES
+       ========================= */
+
+    const q =
+        await db
+            .from("questoes")
+            .select(
+                "id,id_curadoria,enunciado,explicacao,fundamento,dificuldade,assunto_id"
+            )
+            .in(
+                "assunto_id",
+                assuntoIds
+            )
+            .eq(
+                "ativa",
+                true
+            )
+            .eq(
+                "status_revisao",
+                "aprovada_gold"
+            );
+
+
+    if(q.error){
+
+        throw q.error;
+
+    }
+
+
+    const questoes =
+        q.data || [];
+
+
+    if(!questoes.length){
+
+        return [];
+
+    }
+
+
+    /* =========================
+       BUSCAR ASSUNTOS
+       ========================= */
+
+    const assuntos =
+        await db
+            .from("assuntos")
+            .select(
+                "id,nome,materia_id"
+            )
+            .in(
+                "id",
+                assuntoIds
+            );
+
+
+    if(assuntos.error){
+
+        throw assuntos.error;
+
+    }
+
+
+    const materiasIds = [
+        ...new Set(
+            (assuntos.data || [])
+                .map(
+                    x => x.materia_id
+                )
+        )
+    ];
+
+
+    /* =========================
+       BUSCAR MATÉRIAS
+       ========================= */
+
+    const materias =
+        await db
+            .from("materias")
+            .select(
+                "id,nome"
+            )
+            .in(
+                "id",
+                materiasIds
+            );
+
+
+    if(materias.error){
+
+        throw materias.error;
+
+    }
+
+
+    /* =========================
+       MAPAS
+       ========================= */
+
+    const mapaAssunto = {};
+
+
+    (assuntos.data || [])
+        .forEach(
+            a => {
+
+                mapaAssunto[a.id] = a;
+
+            }
+        );
+
+
+    const mapaMateria = {};
+
+
+    (materias.data || [])
+        .forEach(
+            m => {
+
+                mapaMateria[m.id] = m;
+
+            }
+        );
+
+
+    /* =========================
+       ENRIQUECER QUESTÕES
+       ========================= */
+
+    questoes.forEach(
+        q => {
+
+            const a =
+                mapaAssunto[
+                    q.assunto_id
+                ];
+
+
+            q.assuntoNome =
+                a
+                    ? a.nome
+                    : "";
+
+
+            q.materiaNome =
+                a &&
+                mapaMateria[
+                    a.materia_id
+                ]
+                    ? mapaMateria[
+                        a.materia_id
+                    ].nome
+                    : "";
+
+        }
+    );
+
+
+    return questoes;
+
+}
+
+
+/* =========================================================
+   INICIAR ESTUDO
+   ========================================================= */
+
+async function iniciarEstudo(){
+
+    try{
+
+        perfilAtual =
+            document
+                .getElementById(
+                    "perfilSelect"
+                )
+                .value;
+
+
+        if(!perfilAtual){
+
+            alert(
+                "Selecione o usuário."
+            );
+
+            return;
+
+        }
+
+
+        materiaAtual =
+            document
+                .getElementById(
+                    "materiaSelect"
+                )
+                .value;
+
+
+        assuntoAtual =
+            document
+                .getElementById(
+                    "assuntoSelect"
+                )
+                .value;
+
+
+        modo =
+            "estudo";
+
+
+        status(
+            "Buscando questões..."
+        );
+
+
+        lista =
+            await obterQuestoes();
+
+
+        if(!lista.length){
+
+            status(
+                "Nenhuma questão encontrada para esse filtro."
+            );
+
+            return;
+
+        }
+
+
+        embaralhar(lista);
+
+
+        posicao = 0;
+
+
+        abrirTelaQuestoes();
+
+
+        await mostrarQuestao();
+
+
+    }catch(e){
+
+        alert(
+            "ERRO AO INICIAR ESTUDO:\n\n" +
+            (e.message || String(e))
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   INICIAR SIMULADO
+   ========================================================= */
+
+async function iniciarSimulado(){
+
+    try{
+
+        perfilAtual =
+            document
+                .getElementById(
+                    "perfilSelect"
+                )
+                .value;
+
+
+        if(!perfilAtual){
+
+            alert(
+                "Selecione o usuário."
+            );
+
+            return;
+
+        }
+
+
+        materiaAtual =
+            document
+                .getElementById(
+                    "materiaSelect"
+                )
+                .value;
+
+
+        assuntoAtual =
+            document
+                .getElementById(
+                    "assuntoSelect"
+                )
+                .value;
+
+
+        modo =
+            "simulado";
+
+
+        status(
+            "Montando simulado..."
+        );
+
+
+        let todas =
+            await obterQuestoes();
+
+
+        if(!todas.length){
+
+            status(
+                "Nenhuma questão encontrada para esse filtro."
+            );
+
+            return;
+
+        }
+
+
+        embaralhar(todas);
+
+
+        lista =
+            todas.slice(
+                0,
+                Math.min(
+                    10,
+                    todas.length
+                )
+            );
+
+
+        posicao = 0;
+
+
+        acertosSimulado = 0;
+
+
+        abrirTelaQuestoes();
+
+
+        await mostrarQuestao();
+
+
+    }catch(e){
+
+        alert(
+            "ERRO AO INICIAR SIMULADO:\n\n" +
+            (e.message || String(e))
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MOSTRAR QUESTÃO
+   ========================================================= */
+
+async function mostrarQuestao(){
+
+    respostaDada = false;
+
+
+    document
+        .getElementById(
+            "resultado"
+        )
+        .innerHTML = "";
+
+
+    document
+        .getElementById(
+            "explicacao"
+        )
+        .innerHTML = "";
+
+
+    document
+        .getElementById(
+            "btnProxima"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    questaoAtual =
+        lista[posicao];
+
+
+    if(!questaoAtual){
+
+        finalizarSimulado();
+
+        return;
+
+    }
+
+
+    document
+        .getElementById(
+            "info"
+        )
+        .textContent =
+            questaoAtual.materiaNome +
+            " • " +
+            questaoAtual.assuntoNome;
+
+
+    document
+        .getElementById(
+            "contador"
+        )
+        .textContent =
+            (
+                modo === "simulado"
+                    ? "Simulado"
+                    : "Estudo"
+            ) +
+            " — questão " +
+            (posicao + 1) +
+            " de " +
+            lista.length;
+
+
+    document
+        .getElementById(
+            "enunciado"
+        )
+        .textContent =
+            questaoAtual.enunciado;
+
+
+    document
+        .getElementById(
+            "alternativas"
+        )
+        .innerHTML =
+            "Carregando alternativas...";
+
+
+    const a =
+        await db
+            .from("alternativas")
+            .select(
+                "id,letra,texto,correta,ordem"
+            )
+            .eq(
+                "questao_id",
+                questaoAtual.id
+            )
+            .order(
+                "ordem"
+            );
+
+
+    if(a.error){
+
+        throw a.error;
+
+    }
+
+
+    alternativas =
+        a.data || [];
+
+
+    document
+        .getElementById(
+            "alternativas"
+        )
+        .innerHTML = "";
+
+
+    alternativas.forEach(
+        alternativa => {
+
+            const botao =
+                document.createElement(
+                    "button"
+                );
+
+
+            botao.type =
+                "button";
+
+
+            botao.className =
+                "alt";
+
+
+            botao.innerHTML =
+                "<b>" +
+                alternativa.letra +
+                ")</b> " +
+                escapeHTML(
+                    alternativa.texto
+                );
+
+
+            botao.onclick =
+                function(){
+
+                    responder(
+                        alternativa.letra
+                    );
+
+                };
+
+
+            document
+                .getElementById(
+                    "alternativas"
+                )
+                .appendChild(
+                    botao
+                );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   RESPONDER
+   ========================================================= */
 
 async function responder(letra){
- if(respondida)return;respondida=true;
- const correta=alternativasAtuais.find(x=>x.correta===true),acertou=!!correta&&correta.letra===letra;
- Array.from(alternativasEl.children).forEach((b,i)=>{b.disabled=true;if(alternativasAtuais[i].correta)b.classList.add("correct");if(alternativasAtuais[i].letra===letra&&!alternativasAtuais[i].correta)b.classList.add("wrong")});
- resultadoEl.className=acertou?"ok":"bad";resultadoEl.innerHTML=acertou?"<b>✓ CORRETA</b>":"<b>✗ INCORRETA</b><br>Gabarito: "+(correta?correta.letra:"—");
- explicacaoEl.innerHTML="<h3>Explicação</h3><p>"+esc(questaoAtual.explicacao||"Sem explicação cadastrada.")+"</p><h3>Fundamento</h3><p>"+esc(questaoAtual.fundamento||"Sem fundamento cadastrado.")+"</p>";explicacaoEl.classList.remove("hidden");proximaEl.classList.remove("hidden");
- if(modo==="simulado"&&acertou)simAcertos++;
- const r=await sb.from("respostas").insert({perfil_id:perfilAtual,questao_id:questaoAtual.id,alternativa_marcada:letra,acertou:!!acertou});
- if(r.error)console.warn(r.error);
- if(modo==="simulado"&&indice===questoes.length-1)proximaEl.textContent="Resultado";
+
+    if(respostaDada){
+
+        return;
+
+    }
+
+
+    respostaDada = true;
+
+
+    const correta =
+        alternativas.find(
+            x =>
+                x.correta === true
+        );
+
+
+    const acertou =
+        !!correta &&
+        correta.letra === letra;
+
+
+    const botoes =
+        document.querySelectorAll(
+            "#alternativas button"
+        );
+
+
+    botoes.forEach(
+        (b,i) => {
+
+            b.disabled = true;
+
+
+            if(
+                alternativas[i].correta
+            ){
+
+                b.classList.add(
+                    "correct"
+                );
+
+            }
+
+
+            if(
+                alternativas[i].letra === letra &&
+                !alternativas[i].correta
+            ){
+
+                b.classList.add(
+                    "wrong"
+                );
+
+            }
+
+        }
+    );
+
+
+    const resultado =
+        document.getElementById(
+            "resultado"
+        );
+
+
+    resultado.className =
+        acertou
+            ? "ok"
+            : "bad";
+
+
+    resultado.innerHTML =
+        acertou
+            ? "<b>✓ CORRETA</b>"
+            : "<b>✗ INCORRETA</b><br>" +
+              "Gabarito: " +
+              (
+                  correta
+                      ? correta.letra
+                      : "—"
+              );
+
+
+    document
+        .getElementById(
+            "explicacao"
+        )
+        .innerHTML =
+
+        "<h3>Explicação</h3>" +
+
+        "<p>" +
+
+        escapeHTML(
+            questaoAtual.explicacao ||
+            "Sem explicação cadastrada."
+        ) +
+
+        "</p>" +
+
+        "<h3>Fundamento</h3>" +
+
+        "<p>" +
+
+        escapeHTML(
+            questaoAtual.fundamento ||
+            "Sem fundamento cadastrado."
+        ) +
+
+        "</p>";
+
+
+    document
+        .getElementById(
+            "explicacao"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "btnProxima"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+
+    if(
+        modo === "simulado" &&
+        acertou
+    ){
+
+        acertosSimulado++;
+
+    }
+
+
+    const r =
+        await db
+            .from("respostas")
+            .insert({
+
+                perfil_id:
+                    perfilAtual,
+
+                questao_id:
+                    questaoAtual.id,
+
+                alternativa_marcada:
+                    letra,
+
+                acertou:
+                    !!acertou
+
+            });
+
+
+    if(r.error){
+
+        console.warn(
+            "Erro ao registrar resposta:",
+            r.error
+        );
+
+    }
+
+
+    if(
+        modo === "simulado" &&
+        posicao === lista.length - 1
+    ){
+
+        document
+            .getElementById(
+                "btnProxima"
+            )
+            .textContent =
+                "VER RESULTADO";
+
+    }
+
 }
 
-async function proxima(){
- indice++;
- if(indice>=questoes.length){
-  if(modo==="simulado"){resultadoSimulado();return}
-  embaralhar(questoes);indice=0;
- }
- await mostrar();
+
+/* =========================================================
+   PRÓXIMA QUESTÃO
+   ========================================================= */
+
+async function proximaQuestao(){
+
+    posicao++;
+
+
+    if(
+        posicao >= lista.length
+    ){
+
+        if(
+            modo === "simulado"
+        ){
+
+            finalizarSimulado();
+
+            return;
+
+        }
+
+
+        embaralhar(lista);
+
+
+        posicao = 0;
+
+    }
+
+
+    await mostrarQuestao();
+
 }
 
-function resultadoSimulado(){
- questaoBox.classList.add("hidden");painel.classList.remove("hidden");
- const total=questoes.length,p=total?Math.round(simAcertos/total*100):0;
- painel.innerHTML="<h2>Resultado</h2><p>Acertos: <b>"+simAcertos+"</b> de "+total+"</p><p>Aproveitamento: <b>"+p+"%</b></p><button onclick='voltar()'>Voltar</button>";
+
+/* =========================================================
+   RESULTADO DO SIMULADO
+   ========================================================= */
+
+function finalizarSimulado(){
+
+    document
+        .getElementById(
+            "questao"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "painel"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+
+    const total =
+        lista.length;
+
+
+    const percentual =
+        total
+            ? Math.round(
+                acertosSimulado /
+                total *
+                100
+            )
+            : 0;
+
+
+    document
+        .getElementById(
+            "painel"
+        )
+        .innerHTML =
+
+        "<h2>Resultado do simulado</h2>" +
+
+        "<p>Acertos: <b>" +
+
+        acertosSimulado +
+
+        "</b> de " +
+
+        total +
+
+        "</p>" +
+
+        "<p>Aproveitamento: <b>" +
+
+        percentual +
+
+        "%</b></p>" +
+
+        "<button " +
+        "type='button' " +
+        "onclick='voltarInicio()'>" +
+
+        "Voltar" +
+
+        "</button>";
+
 }
 
-async function desempenho(){
- if(!perfilEl.value){msg("Selecione o usuário.");return}
- const r=await sb.from("respostas").select("acertou").eq("perfil_id",perfilEl.value);
- if(r.error){msg(r.error.message);return}
- const total=r.data.length,ac=r.data.filter(x=>x.acertou).length;
- configEl.classList.add("hidden");questaoBox.classList.add("hidden");painel.classList.remove("hidden");
- painel.innerHTML="<h2>Meu desempenho</h2><p>Respondidas: <b>"+total+"</b></p><p>Acertos: <b>"+ac+"</b></p><p>Erros: <b>"+(total-ac)+"</b></p><p>Aproveitamento: <b>"+(total?Math.round(ac/total*100):0)+"%</b></p><button onclick='voltar()'>Voltar</button>";
+
+/* =========================================================
+   DESEMPENHO
+   ========================================================= */
+
+async function mostrarDesempenho(){
+
+    const p =
+        document
+            .getElementById(
+                "perfilSelect"
+            )
+            .value;
+
+
+    if(!p){
+
+        alert(
+            "Selecione o usuário."
+        );
+
+        return;
+
+    }
+
+
+    const r =
+        await db
+            .from("respostas")
+            .select(
+                "acertou"
+            )
+            .eq(
+                "perfil_id",
+                p
+            );
+
+
+    if(r.error){
+
+        alert(
+            r.error.message
+        );
+
+        return;
+
+    }
+
+
+    const total =
+        r.data.length;
+
+
+    const acertos =
+        r.data.filter(
+            x =>
+                x.acertou
+        ).length;
+
+
+    const erros =
+        total - acertos;
+
+
+    const percentual =
+        total
+            ? Math.round(
+                acertos /
+                total *
+                100
+            )
+            : 0;
+
+
+    document
+        .getElementById(
+            "inicio"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "questao"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "painel"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "painel"
+        )
+        .innerHTML =
+
+        "<h2>Meu desempenho</h2>" +
+
+        "<p>Respondidas: <b>" +
+        total +
+        "</b></p>" +
+
+        "<p>Acertos: <b>" +
+        acertos +
+        "</b></p>" +
+
+        "<p>Erros: <b>" +
+        erros +
+        "</b></p>" +
+
+        "<p>Aproveitamento: <b>" +
+        percentual +
+        "%</b></p>" +
+
+        "<button " +
+        "type='button' " +
+        "onclick='voltarInicio()'>" +
+
+        "Voltar" +
+
+        "</button>";
+
 }
 
-async function erros(){
- if(!perfilEl.value){msg("Selecione o usuário.");return}
- const r=await sb.from("respostas").select("questao_id,respondida_em").eq("perfil_id",perfilEl.value).eq("acertou",false).order("respondida_em",{ascending:false});
- if(r.error){msg(r.error.message);return}
- const ids=[...new Set((r.data||[]).map(x=>x.questao_id))];
- configEl.classList.add("hidden");questaoBox.classList.add("hidden");painel.classList.remove("hidden");
- if(!ids.length){painel.innerHTML="<h2>Meus erros</h2><p>Nenhum erro registrado.</p><button onclick='voltar()'>Voltar</button>";return}
- const q=await sb.from("questoes").select("id,enunciado,assuntos(nome,materias(nome))").in("id",ids);
- if(q.error){msg(q.error.message);return}
- painel.innerHTML="<h2>Meus erros</h2>"+q.data.map((x,i)=>"<div class='card'><b>"+(i+1)+". "+esc(x.assuntos.materias.nome)+" • "+esc(x.assuntos.nome)+"</b><p>"+esc(x.enunciado)+"</p></div>").join("")+"<button onclick='voltar()'>Voltar</button>";
+
+/* =========================================================
+   MEUS ERROS
+   ========================================================= */
+
+async function mostrarErros(){
+
+    const p =
+        document
+            .getElementById(
+                "perfilSelect"
+            )
+            .value;
+
+
+    if(!p){
+
+        alert(
+            "Selecione o usuário."
+        );
+
+        return;
+
+    }
+
+
+    const r =
+        await db
+            .from("respostas")
+            .select(
+                "questao_id"
+            )
+            .eq(
+                "perfil_id",
+                p
+            )
+            .eq(
+                "acertou",
+                false
+            )
+            .order(
+                "respondida_em",
+                {
+                    ascending:false
+                }
+            );
+
+
+    if(r.error){
+
+        alert(
+            r.error.message
+        );
+
+        return;
+
+    }
+
+
+    const ids = [
+        ...new Set(
+            (r.data || [])
+                .map(
+                    x =>
+                        x.questao_id
+                )
+        )
+    ];
+
+
+    document
+        .getElementById(
+            "inicio"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "questao"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "painel"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+
+    if(!ids.length){
+
+        document
+            .getElementById(
+                "painel"
+            )
+            .innerHTML =
+
+            "<h2>Meus erros</h2>" +
+
+            "<p>Nenhum erro registrado.</p>" +
+
+            "<button " +
+            "type='button' " +
+            "onclick='voltarInicio()'>" +
+
+            "Voltar" +
+
+            "</button>";
+
+        return;
+
+    }
+
+
+    const q =
+        await db
+            .from("questoes")
+            .select(
+                "id,enunciado,assunto_id"
+            )
+            .in(
+                "id",
+                ids
+            );
+
+
+    if(q.error){
+
+        alert(
+            q.error.message
+        );
+
+        return;
+
+    }
+
+
+    document
+        .getElementById(
+            "painel"
+        )
+        .innerHTML =
+
+        "<h2>Meus erros</h2>" +
+
+        (q.data || [])
+            .map(
+                (x,i) =>
+
+                    "<div class='box'>" +
+
+                    "<b>" +
+                    (i + 1) +
+                    ".</b> " +
+
+                    escapeHTML(
+                        x.enunciado
+                    ) +
+
+                    "</div>"
+            )
+            .join("") +
+
+        "<button " +
+        "type='button' " +
+        "onclick='voltarInicio()'>" +
+
+        "Voltar" +
+
+        "</button>";
+
 }
 
-function voltar(){questaoBox.classList.add("hidden");painel.classList.add("hidden");configEl.classList.remove("hidden");msg("Banco conectado.")}
 
-document.getElementById("estudar").onclick=()=>iniciar("estudo");
-document.getElementById("simulado").onclick=()=>iniciar("simulado");
-document.getElementById("proxima").onclick=proxima;
-document.getElementById("voltar").onclick=voltar;
-document.getElementById("desempenho").onclick=desempenho;
-document.getElementById("erros").onclick=erros;
-materiaEl.onchange=assuntos;
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
 
-init();
+function voltarInicio(){
+
+    document
+        .getElementById(
+            "questao"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "painel"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "inicio"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+
+    status(
+        "Banco conectado."
+    );
+
+}
+
+
+function abrirTelaQuestoes(){
+
+    document
+        .getElementById(
+            "inicio"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "painel"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "questao"
+        )
+        .classList.remove(
+            "hidden"
+        );
+
+}
+
+
+/* =========================================================
+   EXPOR FUNÇÕES
+   ========================================================= */
+
+window.iniciarEstudo =
+    iniciarEstudo;
+
+window.iniciarSimulado =
+    iniciarSimulado;
+
+window.carregarAssuntos =
+    carregarAssuntos;
+
+window.mostrarDesempenho =
+    mostrarDesempenho;
+
+window.mostrarErros =
+    mostrarErros;
+
+window.proximaQuestao =
+    proximaQuestao;
+
+window.voltarInicio =
+    voltarInicio;
+
+
+/* =========================================================
+   INICIAR APLICAÇÃO
+   ========================================================= */
+
+inicializar();
+
 </script>
+
 </body>
 </html>
