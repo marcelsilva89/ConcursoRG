@@ -1,659 +1,430 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0f172a">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ConcursoRG</title>
 
-  <title>OGMO Estudos</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
-      color: #0f172a;
-    }
-
-    button {
-      font: inherit;
-    }
-
-    .app {
-      max-width: 760px;
-      margin: auto;
-      padding: 22px 18px 100px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .eyebrow {
-      font-size: 11px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      color: #64748b;
-    }
-
-    h1 {
-      margin: 4px 0 0;
-      font-size: 26px;
-    }
-
-    .location {
-      margin: 3px 0 0;
-      color: #64748b;
-      font-size: 14px;
-    }
-
-    .avatar {
-      width: 42px;
-      height: 42px;
-      border: 0;
-      border-radius: 50%;
-      background: #0f172a;
-      color: white;
-      font-weight: bold;
-    }
-
-    .welcome {
-      margin: 30px 0 18px;
-    }
-
-    .welcome small {
-      color: #64748b;
-    }
-
-    .welcome h2 {
-      margin: 6px 0;
-      font-size: 26px;
-    }
-
-    .welcome p {
-      color: #64748b;
-      line-height: 1.5;
-    }
-
-    .hero {
-      padding: 23px;
-      border-radius: 24px;
-      background: #0f172a;
-      color: white;
-    }
-
-    .pill {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 20px;
-      background: #263247;
-      font-size: 10px;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-
-    .hero h3 {
-      margin: 14px 0 7px;
-      font-size: 23px;
-    }
-
-    .hero p {
-      color: #cbd5e1;
-      line-height: 1.5;
-    }
-
-    .primary {
-      border: 0;
-      border-radius: 13px;
-      padding: 13px 17px;
-      background: white;
-      color: #0f172a;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .card {
-      border: 1px solid #e2e8f0;
-      background: white;
-      border-radius: 20px;
-      padding: 18px;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .icon {
-      display: block;
-      font-size: 25px;
-      margin-bottom: 14px;
-    }
-
-    .card strong {
-      display: block;
-      font-size: 16px;
-    }
-
-    .card small {
-      display: block;
-      margin-top: 5px;
-      color: #64748b;
-      line-height: 1.4;
-    }
-
-    .section {
-      margin-top: 25px;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .section-header h3 {
-      margin: 0 0 10px;
-    }
-
-    .subject {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px;
-      margin-bottom: 9px;
-      border: 1px solid #e2e8f0;
-      border-radius: 15px;
-      background: white;
-      cursor: pointer;
-      text-align: left;
-    }
-
-    .subject span:last-child {
-      color: #64748b;
-      font-size: 13px;
-    }
-
-    .bottom {
-      position: fixed;
-      left: 50%;
-      bottom: 0;
-      transform: translateX(-50%);
-      width: min(100%, 760px);
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      padding: 10px 8px;
-      background: white;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    .bottom button {
-      border: 0;
-      background: white;
-      color: #64748b;
-      font-size: 11px;
-      cursor: pointer;
-    }
-
-    .bottom span {
-      display: block;
-      font-size: 20px;
-      margin-bottom: 3px;
-    }
-
-    @media (min-width: 650px) {
-      .grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-  </style>
-</head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script>
-const SUPABASE_URL = "https://ajjurecdcxjnqgjjfdgh.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable__SKCRSh1D0MT_d_VYGAS4Q_8vpE4han";
-
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-);
-</script>
-<body>
-
-  <main class="app">
-
-    <header class="topbar">
-
-      <div>
-        <div class="eyebrow">CONCURSO OGMO</div>
-        <h1>OGMO Estudos</h1>
-        <p class="location">Rio Grande/RS</p>
-      </div>
-
-      <button class="avatar">MS</button>
-
-    </header>
-
-
-    <section class="welcome">
-
-      <small>Bom estudo!</small>
-
-      <h2>Continue sua preparação</h2>
-
-      <p>
-        Questões revisadas e fundamentos normativos
-        para você estudar com confiança.
-      </p>
-
-    </section>
-
-
-    <section class="hero">
-
-      <span class="pill">BANCO GOLD</span>
-
-      <h3>795 questões confiáveis</h3>
-
-      <p>
-        Questões aprovadas pelo nosso critério de
-        gabarito, conceito, fundamento e vigência normativa.
-      </p>
-
-      <button class="primary" onclick="mensagem('Questões — vamos construir essa tela agora!')">
-        Estudar questões
-      </button>
-
-    </section>
-
-
-    <section class="grid">
-
-      <button class="card" onclick="mensagem('Simulados — próxima etapa')">
-        <span class="icon">📝</span>
-        <strong>Simulados</strong>
-        <small>Provas de 40 questões</small>
-      </button>
-
-      <button class="card" onclick="mensagem('Meus erros — próxima etapa')">
-        <span class="icon">❌</span>
-        <strong>Meus erros</strong>
-        <small>Revise o que você errou</small>
-      </button>
-
-      <button class="card" onclick="mensagem('Favoritos — próxima etapa')">
-        <span class="icon">⭐</span>
-        <strong>Favoritos</strong>
-        <small>Questões salvas por você</small>
-      </button>
-
-      <button class="card" onclick="mensagem('Desempenho — próxima etapa')">
-        <span class="icon">📊</span>
-        <strong>Meu desempenho</strong>
-        <small>Acompanhe sua evolução</small>
-      </button>
-
-    </section>
-
-
-    <section class="section">
-
-      <div class="section-header">
-        <h3>Matérias</h3>
-      </div>
-
-
-      <button class="subject" onclick="mensagem('NR-29')">
-        <span>NR-29</span>
-        <span>285 questões</span>
-      </button>
-
-      <button class="subject" onclick="mensagem('NR-35')">
-        <span>NR-35</span>
-        <span>133 questões</span>
-      </button>
-
-      <button class="subject" onclick="mensagem('Lei 9.719/98')">
-        <span>Lei 9.719/98</span>
-        <span>157 questões</span>
-      </button>
-
-      <button class="subject" onclick="mensagem('Lei 12.815/13')">
-        <span>Lei 12.815/13</span>
-        <span>148 questões</span>
-      </button>
-
-      <button class="subject" onclick="mensagem('Decreto 8.033/13')">
-        <span>Decreto 8.033/13</span>
-        <span>72 questões</span>
-      </button>
-
-    </section>
-
-  </main>
-
-
-  <nav class="bottom">
-
-    <button onclick="mensagem('Início')">
-      <span>⌂</span>
-      Início
-    </button>
-
-    <button onclick="mensagem('Questões')">
-      <span>?</span>
-      Questões
-    </button>
-
-    <button onclick="mensagem('Simulado')">
-      <span>▣</span>
-      Simulado
-    </button>
-
-    <button onclick="mensagem('Desempenho')">
-      <span>◔</span>
-      Desempenho
-    </button>
-
-  </nav>
-
-
-  <script>
-
-/* =========================================================
-   OGMO ESTUDOS — MOTOR DE QUESTÕES
-   ========================================================= */
-
-let perfilAtual = null;
-let materiaAtual = null;
-let questaoAtual = null;
-let alternativasAtuais = [];
-let indiceQuestao = 0;
-
-const estudoHTML = `
-<section id="estudoApp" style="
+<style>
+body{
+    font-family:Arial,sans-serif;
     max-width:900px;
-    margin:30px auto;
-    padding:20px;
-    background:#fff;
-    border-radius:18px;
-    box-shadow:0 4px 20px rgba(0,0,0,.08);
-">
-
-    <h2 style="margin-top:0;">📚 Estudar questões</h2>
-
-    <div id="configEstudo">
-
-        <label style="display:block;margin:15px 0 6px;font-weight:bold;">
-            Usuário
-        </label>
-
-        <select id="selectPerfil" style="
-            width:100%;
-            padding:12px;
-            border:1px solid #ddd;
-            border-radius:10px;
-        ">
-            <option value="">Carregando usuários...</option>
-        </select>
-
-        <label style="display:block;margin:15px 0 6px;font-weight:bold;">
-            Matéria
-        </label>
-
-        <select id="selectMateria" style="
-            width:100%;
-            padding:12px;
-            border:1px solid #ddd;
-            border-radius:10px;
-        ">
-            <option value="">Todas as matérias</option>
-        </select>
-
-        <button id="btnComecar" style="
-            margin-top:18px;
-            width:100%;
-            padding:14px;
-            border:0;
-            border-radius:10px;
-            background:#0f172a;
-            color:white;
-            font-weight:bold;
-            font-size:16px;
-        ">
-            Começar a estudar
-        </button>
-
-    </div>
-
-    <div id="areaQuestao" style="display:none;margin-top:25px;">
-
-        <div id="infoQuestao" style="
-            color:#667085;
-            font-size:14px;
-            margin-bottom:12px;
-        "></div>
-
-        <div id="contadorQuestao" style="
-            color:#667085;
-            font-size:13px;
-            margin-bottom:15px;
-        "></div>
-
-        <h3 id="textoQuestao" style="
-            line-height:1.5;
-            font-size:20px;
-        "></h3>
-
-        <div id="alternativasQuestao" style="
-            display:grid;
-            gap:10px;
-            margin-top:20px;
-        "></div>
-
-        <div id="resultadoQuestao" style="
-            display:none;
-            margin-top:20px;
-            padding:15px;
-            border-radius:10px;
-        "></div>
-
-        <div id="explicacaoQuestao" style="
-            display:none;
-            margin-top:18px;
-            padding:18px;
-            background:#f5f7fa;
-            border-radius:12px;
-            line-height:1.6;
-        "></div>
-
-        <button id="btnProxima" style="
-            display:none;
-            margin-top:18px;
-            width:100%;
-            padding:14px;
-            border:0;
-            border-radius:10px;
-            background:#0f172a;
-            color:white;
-            font-weight:bold;
-        ">
-            Próxima questão
-        </button>
-
-        <button id="btnVoltar" style="
-            margin-top:10px;
-            width:100%;
-            padding:12px;
-            border:0;
-            border-radius:10px;
-            background:#e9eef6;
-            color:#172033;
-            font-weight:bold;
-        ">
-            Escolher outra matéria
-        </button>
-
-    </div>
-
-    <div id="mensagemEstudo" style="margin-top:15px;"></div>
-
-</section>
-`;
-
-
-/* ---------------------------------------------------------
-   COLOCA A INTERFACE NO SITE
-   --------------------------------------------------------- */
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const main = document.querySelector("main");
-
-    if (!main) {
-        console.error("Não encontrei a tag <main>.");
-        return;
-    }
-
-    main.insertAdjacentHTML("beforeend", estudoHTML);
-
-    document
-        .getElementById("btnComecar")
-        .addEventListener("click", iniciarEstudo);
-
-    document
-        .getElementById("btnProxima")
-        .addEventListener("click", carregarProximaQuestao);
-
-    document
-        .getElementById("btnVoltar")
-        .addEventListener("click", voltarConfiguracao);
-
-    carregarDadosIniciais();
-
-});
-
-
-/* ---------------------------------------------------------
-   MENSAGENS
-   --------------------------------------------------------- */
-
-function mensagem(texto, tipo = "info") {
-
-    const elemento = document.getElementById("mensagemEstudo");
-
-    if (!elemento) return;
-
-    let fundo = "#eef5ff";
-    let cor = "#2457a6";
-
-    if (tipo === "erro") {
-        fundo = "#fff0f0";
-        cor = "#a51d2d";
-    }
-
-    if (tipo === "sucesso") {
-        fundo = "#eaf8ef";
-        cor = "#176b36";
-    }
-
-    elemento.innerHTML = `
-        <div style="
-            background:${fundo};
-            color:${cor};
-            padding:12px;
-            border-radius:10px;
-            margin-top:10px;
-        ">
-            ${texto}
-        </div>
-    `;
+    margin:auto;
+    padding:16px;
+    background:#f5f6f8;
+    color:#172033;
 }
 
+.card{
+    background:white;
+    padding:18px;
+    border-radius:12px;
+    margin:12px 0;
+}
 
-/* ---------------------------------------------------------
-   CARREGA USUÁRIOS E MATÉRIAS
-   --------------------------------------------------------- */
+button,select{
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ccd2dc;
+    font:inherit;
+}
 
-async function carregarDadosIniciais() {
+button{
+    cursor:pointer;
+    font-weight:bold;
+}
 
-    try {
+.primary{
+    background:#172033;
+    color:white;
+}
 
-      const { data: perfis, error: erroPerfis } =
-    await supabaseClient
-        .from("perfis")
+.wide{
+    width:100%;
+    margin-top:10px;
+}
+
+.alt{
+    display:block;
+    width:100%;
+    text-align:left;
+    margin:8px 0;
+    background:#fafafa;
+}
+
+.alt.correct{
+    background:#dff4e5;
+}
+
+.alt.wrong{
+    background:#ffe2e2;
+}
+
+.hidden{
+    display:none;
+}
+
+.ok{
+    padding:12px;
+    background:#e4f6e9;
+    border-radius:8px;
+}
+
+.bad{
+    padding:12px;
+    background:#ffe8e8;
+    border-radius:8px;
+}
+
+.small{
+    font-size:13px;
+    color:#667085;
+}
+
+.row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.row>*{
+    flex:1;
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-top:14px;
+    margin-bottom:6px;
+}
+
+select{
+    width:100%;
+    background:white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>ConcursoRG</h1>
+
+<div class="small">
+Banco Gold • uso interno
+</div>
+
+
+<!-- =========================
+     CONFIGURAÇÃO
+     ========================= -->
+
+<div id="config" class="card">
+
+    <h2>Estudar</h2>
+
+    <label for="perfil">
+        Usuário
+    </label>
+
+    <select id="perfil">
+        <option value="">Carregando...</option>
+    </select>
+
+
+    <label for="materia">
+        Matéria
+    </label>
+
+    <select id="materia">
+        <option value="">Todas</option>
+    </select>
+
+
+    <label for="assunto">
+        Assunto
+    </label>
+
+    <select id="assunto">
+        <option value="">Todos</option>
+    </select>
+
+
+    <div class="row">
+
+        <button
+            id="btnEstudar"
+            class="primary">
+            Estudar
+        </button>
+
+        <button
+            id="btnSimulado">
+            Simulado 10
+        </button>
+
+    </div>
+
+
+    <div class="row">
+
+        <button
+            id="btnDesempenho">
+            Meu desempenho
+        </button>
+
+        <button
+            id="btnErros">
+            Meus erros
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================
+     QUESTÃO
+     ========================= -->
+
+<div
+    id="questaoBox"
+    class="card hidden">
+
+    <div
+        id="meta"
+        class="small">
+    </div>
+
+    <div
+        id="contador"
+        class="small">
+    </div>
+
+    <h2 id="enunciado"></h2>
+
+    <div id="alternativas"></div>
+
+
+    <div
+        id="resultado"
+        class="hidden">
+    </div>
+
+
+    <div
+        id="explicacao"
+        class="card hidden">
+    </div>
+
+
+    <button
+        id="proxima"
+        class="primary wide hidden">
+        Próxima
+    </button>
+
+
+    <button
+        id="btnVoltarQuestao"
+        class="wide">
+        Voltar
+    </button>
+
+</div>
+
+
+
+<!-- =========================
+     PAINEL
+     ========================= -->
+
+<div
+    id="painel"
+    class="card hidden">
+</div>
+
+
+
+<script>
+
+/* =========================================================
+   CONFIGURAÇÃO DO SUPABASE
+   ========================================================= */
+
+const SUPABASE_URL =
+    "https://ajjurecdcxjnqgjjfdgh.supabase.co";
+
+const SUPABASE_ANON_KEY =
+    "sb_publishable__SKCRSh1D0MT_d_VYGAS4Q_8vpE4han";
+
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );
+
+
+/* =========================================================
+   VARIÁVEIS
+   ========================================================= */
+
+let perfilAtual = "";
+
+let materiaAtual = "";
+
+let assuntoAtual = "";
+
+let bancoQuestoes = [];
+
+let fila = [];
+
+let pos = 0;
+
+let respondida = false;
+
+let modo = "estudo";
+
+let simuladoTotal = 10;
+
+let simuladoAcertos = 0;
+
+let qAtual = null;
+
+let altAtual = [];
+
+
+/* =========================================================
+   ELEMENTOS
+   ========================================================= */
+
+const elPerfil =
+    document.getElementById("perfil");
+
+const elMateria =
+    document.getElementById("materia");
+
+const elAssunto =
+    document.getElementById("assunto");
+
+const elConfig =
+    document.getElementById("config");
+
+const elQuestaoBox =
+    document.getElementById("questaoBox");
+
+const elPainel =
+    document.getElementById("painel");
+
+const elMeta =
+    document.getElementById("meta");
+
+const elContador =
+    document.getElementById("contador");
+
+const elEnunciado =
+    document.getElementById("enunciado");
+
+const elAlternativas =
+    document.getElementById("alternativas");
+
+const elResultado =
+    document.getElementById("resultado");
+
+const elExplicacao =
+    document.getElementById("explicacao");
+
+const elProxima =
+    document.getElementById("proxima");
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    carregar
+);
+
+
+/* =========================================================
+   CARREGAR USUÁRIOS E MATÉRIAS
+   ========================================================= */
+
+async function carregar(){
+
+    try{
+
+        const p =
+            await supabaseClient
+                .from("perfis")
                 .select("id,nome")
-                .eq("ativo", true)
+                .eq("ativo",true)
                 .order("nome");
 
-        if (erroPerfis) throw erroPerfis;
 
-        const selectPerfil =
-            document.getElementById("selectPerfil");
+        if(p.error){
 
-        selectPerfil.innerHTML =
-            '<option value="">Selecione seu usuário</option>';
+            throw p.error;
 
-        (perfis || []).forEach(function (perfil) {
-
-            selectPerfil.innerHTML += `
-                <option value="${perfil.id}">
-                    ${escaparHTML(perfil.nome)}
-                </option>
-            `;
-
-        });
+        }
 
 
-        const { data: materias, error: erroMaterias } =
+        elPerfil.innerHTML =
+            '<option value="">Selecione</option>';
+
+
+        (p.data || []).forEach(
+            function(perfil){
+
+                elPerfil.innerHTML +=
+                    `<option value="${perfil.id}">
+                        ${esc(perfil.nome)}
+                    </option>`;
+
+            }
+        );
+
+
+        const m =
             await supabaseClient
                 .from("materias")
                 .select("id,nome,ordem")
                 .order("ordem");
 
-        if (erroMaterias) throw erroMaterias;
 
-        const selectMateria =
-            document.getElementById("selectMateria");
+        if(m.error){
 
-        selectMateria.innerHTML =
-            '<option value="">Todas as matérias</option>';
+            throw m.error;
 
-        (materias || []).forEach(function (materia) {
+        }
 
-            selectMateria.innerHTML += `
-                <option value="${materia.id}">
-                    ${escaparHTML(materia.nome)}
-                </option>
-            `;
 
-        });
+        elMateria.innerHTML =
+            '<option value="">Todas</option>';
 
-        mensagem(
-            "Banco conectado. Escolha seu usuário e uma matéria.",
-            "sucesso"
+
+        (m.data || []).forEach(
+            function(materia){
+
+                elMateria.innerHTML +=
+                    `<option value="${materia.id}">
+                        ${esc(materia.nome)}
+                    </option>`;
+
+            }
         );
 
-    } catch (erro) {
 
-        console.error(erro);
+    }catch(e){
 
-        mensagem(
-            "Não consegui carregar os dados do Supabase.<br><br>" +
-            escaparHTML(erro.message || String(erro)),
-            "erro"
+        alert(
+            "Erro ao carregar o banco:\n\n" +
+            (e.message || e)
         );
 
     }
@@ -661,106 +432,71 @@ async function carregarDadosIniciais() {
 }
 
 
-/* ---------------------------------------------------------
-   COMEÇAR
-   --------------------------------------------------------- */
+/* =========================================================
+   QUANDO MUDA A MATÉRIA
+   ========================================================= */
 
-async function iniciarEstudo() {
+elMateria.addEventListener(
+    "change",
+    carregarAssuntos
+);
 
-    perfilAtual =
-        document.getElementById("selectPerfil").value;
 
-    materiaAtual =
-        document.getElementById("selectMateria").value;
+async function carregarAssuntos(){
 
-    if (!perfilAtual) {
+    elAssunto.innerHTML =
+        '<option value="">Todos</option>';
 
-        mensagem(
-            "Selecione seu usuário antes de começar.",
-            "erro"
-        );
+
+    if(!elMateria.value){
 
         return;
+
     }
 
-    indiceQuestao = 0;
 
-    document
-        .getElementById("configEstudo")
-        .style.display = "none";
+    const r =
+        await supabaseClient
+            .from("assuntos")
+            .select("id,nome")
+            .eq(
+                "materia_id",
+                elMateria.value
+            )
+            .order("nome");
 
-    document
-        .getElementById("areaQuestao")
-        .style.display = "block";
 
-    await carregarProximaQuestao();
+    if(r.error){
+
+        alert(r.error.message);
+
+        return;
+
+    }
+
+
+    (r.data || []).forEach(
+        function(assunto){
+
+            elAssunto.innerHTML +=
+                `<option value="${assunto.id}">
+                    ${esc(assunto.nome)}
+                </option>`;
+
+        }
+    );
 
 }
 
 
-/* ---------------------------------------------------------
-   CARREGA UMA QUESTÃO
-   --------------------------------------------------------- */
-async function carregarProximaQuestao() {
+/* =========================================================
+   BUSCAR QUESTÕES
+   ========================================================= */
 
-    document.getElementById("resultadoQuestao").style.display = "none";
-    document.getElementById("explicacaoQuestao").style.display = "none";
-    document.getElementById("btnProxima").style.display = "none";
+async function buscarQuestoes(){
 
-    const areaAlternativas =
-        document.getElementById("alternativasQuestao");
-
-    areaAlternativas.innerHTML =
-        "<p>Carregando questão...</p>";
-
-    try {
-
-        /* 1. Descobre os assuntos da matéria escolhida */
-
-        let consultaAssuntos =
-            supabaseClient
-                .from("assuntos")
-                .select("id");
-
-        if (materiaAtual) {
-            consultaAssuntos =
-                consultaAssuntos.eq(
-                    "materia_id",
-                    materiaAtual
-                );
-        }
-
-        const {
-            data: assuntos,
-            error: erroAssuntos
-        } = await consultaAssuntos;
-
-        if (erroAssuntos) throw erroAssuntos;
-
-        if (!assuntos || assuntos.length === 0) {
-
-            areaAlternativas.innerHTML = "";
-
-            mensagem(
-                "Não encontramos assuntos para essa matéria.",
-                "erro"
-            );
-
-            return;
-        }
-
-        const idsAssuntos =
-            assuntos.map(function (assunto) {
-                return assunto.id;
-            });
-
-
-        /* 2. Busca as questões desses assuntos */
-
-        const {
-            data: questoes,
-            error: erroQuestoes
-        } = await supabaseClient
+    let consulta =
+        supabaseClient
             .from("questoes")
             .select(`
                 id,
@@ -770,300 +506,1137 @@ async function carregarProximaQuestao() {
                 fundamento,
                 dificuldade,
                 assunto_id,
-                assuntos (
+                assuntos!inner(
                     id,
                     nome,
                     materia_id,
-                    materias (
+                    materias!inner(
                         id,
                         nome
                     )
                 )
             `)
-            .in("assunto_id", idsAssuntos)
-            .eq("ativa", true)
-            .eq("status_revisao", "aprovada_gold")
-            .order("id_curadoria")
-            .range(indiceQuestao, indiceQuestao);
+            .eq(
+                "ativa",
+                true
+            )
+            .eq(
+                "status_revisao",
+                "aprovada_gold"
+            );
 
-        if (erroQuestoes) throw erroQuestoes;
 
-        if (!questoes || questoes.length === 0) {
+    if(materiaAtual){
 
-            areaAlternativas.innerHTML = "";
+        consulta =
+            consulta.eq(
+                "assuntos.materia_id",
+                materiaAtual
+            );
 
-            mensagem(
-                "Não encontramos mais questões para esse filtro.",
-                "info"
+    }
+
+
+    if(assuntoAtual){
+
+        consulta =
+            consulta.eq(
+                "assunto_id",
+                assuntoAtual
+            );
+
+    }
+
+
+    const r =
+        await consulta;
+
+
+    if(r.error){
+
+        throw r.error;
+
+    }
+
+
+    return r.data || [];
+
+}
+
+
+/* =========================================================
+   ESTUDO NORMAL
+   ========================================================= */
+
+async function iniciarEstudo(){
+
+    if(!elPerfil.value){
+
+        alert(
+            "Selecione o usuário."
+        );
+
+        return;
+
+    }
+
+
+    perfilAtual =
+        elPerfil.value;
+
+
+    materiaAtual =
+        elMateria.value;
+
+
+    assuntoAtual =
+        elAssunto.value;
+
+
+    modo =
+        "estudo";
+
+
+    try{
+
+        bancoQuestoes =
+            await buscarQuestoes();
+
+
+        embaralhar(
+            bancoQuestoes
+        );
+
+
+        fila =
+            bancoQuestoes.map(
+                function(q){
+
+                    return q.id;
+
+                }
+            );
+
+
+        pos = 0;
+
+
+        if(!fila.length){
+
+            alert(
+                "Não há questões disponíveis para esse filtro."
             );
 
             return;
+
         }
 
-        questaoAtual = questoes[0];
+
+        elConfig.classList.add(
+            "hidden"
+        );
 
 
-        /* 3. Busca as cinco alternativas */
+        elPainel.classList.add(
+            "hidden"
+        );
 
-        const {
-            data: alternativas,
-            error: erroAlternativas
-        } = await supabaseClient
+
+        elQuestaoBox.classList.remove(
+            "hidden"
+        );
+
+
+        await carregarQuestao();
+
+
+    }catch(e){
+
+        alert(
+            "Erro ao buscar questões:\n\n" +
+            (e.message || e)
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SIMULADO
+   ========================================================= */
+
+async function iniciarSimulado(){
+
+    if(!elPerfil.value){
+
+        alert(
+            "Selecione o usuário."
+        );
+
+        return;
+
+    }
+
+
+    perfilAtual =
+        elPerfil.value;
+
+
+    materiaAtual =
+        elMateria.value;
+
+
+    assuntoAtual =
+        elAssunto.value;
+
+
+    modo =
+        "simulado";
+
+
+    try{
+
+        bancoQuestoes =
+            await buscarQuestoes();
+
+
+        embaralhar(
+            bancoQuestoes
+        );
+
+
+        fila =
+            bancoQuestoes
+                .slice(
+                    0,
+                    Math.min(
+                        simuladoTotal,
+                        bancoQuestoes.length
+                    )
+                )
+                .map(
+                    function(q){
+
+                        return q.id;
+
+                    }
+                );
+
+
+        pos = 0;
+
+        simuladoAcertos = 0;
+
+
+        if(!fila.length){
+
+            alert(
+                "Não há questões disponíveis para esse filtro."
+            );
+
+            return;
+
+        }
+
+
+        elConfig.classList.add(
+            "hidden"
+        );
+
+
+        elPainel.classList.add(
+            "hidden"
+        );
+
+
+        elQuestaoBox.classList.remove(
+            "hidden"
+        );
+
+
+        await carregarQuestao();
+
+
+    }catch(e){
+
+        alert(
+            "Erro ao iniciar simulado:\n\n" +
+            (e.message || e)
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CARREGAR QUESTÃO
+   ========================================================= */
+
+async function carregarQuestao(){
+
+    respondida = false;
+
+
+    elResultado.className =
+        "hidden";
+
+
+    elResultado.innerHTML =
+        "";
+
+
+    elExplicacao.classList.add(
+        "hidden"
+    );
+
+
+    elExplicacao.innerHTML =
+        "";
+
+
+    elProxima.classList.add(
+        "hidden"
+    );
+
+
+    elProxima.textContent =
+        "Próxima";
+
+
+    const q =
+        bancoQuestoes.find(
+            function(item){
+
+                return item.id === fila[pos];
+
+            }
+        );
+
+
+    if(!q){
+
+        finalizarSimulado();
+
+        return;
+
+    }
+
+
+    qAtual = q;
+
+
+    elMeta.textContent =
+        q.assuntos.materias.nome +
+        " • " +
+        q.assuntos.nome +
+        (
+            q.dificuldade
+                ? " • " + q.dificuldade
+                : ""
+        );
+
+
+    elContador.textContent =
+        (
+            modo === "simulado"
+                ? "Simulado: "
+                : "Estudo: "
+        ) +
+        "Questão " +
+        (pos + 1) +
+        (
+            modo === "simulado"
+                ? "/" + fila.length
+                : ""
+        );
+
+
+    elEnunciado.textContent =
+        q.enunciado;
+
+
+    elAlternativas.innerHTML =
+        "Carregando alternativas...";
+
+
+    const a =
+        await supabaseClient
             .from("alternativas")
             .select(
                 "id,letra,texto,correta,ordem"
             )
             .eq(
                 "questao_id",
-                questaoAtual.id
+                q.id
             )
-            .order("ordem");
-
-        if (erroAlternativas) throw erroAlternativas;
-
-        alternativasAtuais =
-            alternativas || [];
-
-
-        /* 4. Mostra a questão */
-
-        mostrarQuestao();
-
-
-    } catch (erro) {
-
-        console.error(erro);
-
-        areaAlternativas.innerHTML = "";
-
-        mensagem(
-            "Erro ao carregar questão:<br><br>" +
-            escaparHTML(
-                erro.message || String(erro)
-            ),
-            "erro"
-        );
-
-    }
-}
-
-/* ---------------------------------------------------------
-   MOSTRA QUESTÃO NA TELA
-   --------------------------------------------------------- */
-
-function mostrarQuestao() {
-
-    const materia =
-        questaoAtual.assuntos.materias.nome;
-
-    const assunto =
-        questaoAtual.assuntos.nome;
-
-    document.getElementById("infoQuestao").innerHTML =
-        `<strong>${escaparHTML(materia)}</strong> •
-         ${escaparHTML(assunto)}`;
-
-    document.getElementById("contadorQuestao").textContent =
-        "Questão " + (indiceQuestao + 1);
-
-    document.getElementById("textoQuestao").textContent =
-        questaoAtual.enunciado;
-
-
-    const area =
-        document.getElementById("alternativasQuestao");
-
-    area.innerHTML = "";
-
-
-    alternativasAtuais.forEach(function (alternativa) {
-
-        const botao =
-            document.createElement("button");
-
-        botao.type = "button";
-
-        botao.style.cssText = `
-            width:100%;
-            text-align:left;
-            padding:15px;
-            border:1px solid #d8dee9;
-            border-radius:10px;
-            background:#f8fafc;
-            color:#172033;
-            font-size:16px;
-            line-height:1.45;
-        `;
-
-        botao.innerHTML =
-            `<strong>${alternativa.letra})</strong>
-             ${escaparHTML(alternativa.texto)}`;
-
-        botao.onclick = function () {
-
-            responderQuestao(
-                alternativa.letra,
-                alternativa.correta
+            .order(
+                "ordem"
             );
 
-        };
 
-        area.appendChild(botao);
+    if(a.error){
 
-    });
-
-}
-
-
-/* ---------------------------------------------------------
-   RESPONDER
-   --------------------------------------------------------- */
-
-async function responderQuestao(
-    letraEscolhida,
-    estavaCorreta
-) {
-
-    const botoes =
-        document.querySelectorAll(
-            "#alternativasQuestao button"
+        alert(
+            a.error.message
         );
 
-    botoes.forEach(function (botao) {
-        botao.disabled = true;
-        botao.style.opacity = "0.8";
-    });
+        return;
+
+    }
 
 
-    const resultado =
-        document.getElementById("resultadoQuestao");
-
-    resultado.style.display = "block";
+    altAtual =
+        a.data || [];
 
 
-    if (estavaCorreta) {
+    elAlternativas.innerHTML =
+        "";
 
-        resultado.style.background = "#eaf8ef";
-        resultado.style.color = "#176b36";
 
-        resultado.innerHTML =
-            "<strong>✓ CORRETA!</strong>";
+    altAtual.forEach(
+        function(alternativa){
 
-    } else {
+            const botao =
+                document.createElement(
+                    "button"
+                );
 
-        resultado.style.background = "#fff0f0";
-        resultado.style.color = "#a51d2d";
 
-        const correta =
-            alternativasAtuais.find(
-                function (a) {
-                    return a.correta === true;
+            botao.type =
+                "button";
+
+
+            botao.className =
+                "alt";
+
+
+            botao.innerHTML =
+                "<b>" +
+                alternativa.letra +
+                ")</b> " +
+                esc(
+                    alternativa.texto
+                );
+
+
+            botao.addEventListener(
+                "click",
+                function(){
+
+                    responder(
+                        alternativa.letra
+                    );
+
                 }
             );
 
-        resultado.innerHTML =
-            `<strong>✗ INCORRETA</strong><br>
-             Resposta correta: <strong>${correta ? correta.letra : "—"}</strong>`;
 
-    }
-
-
-    const explicacao =
-        document.getElementById("explicacaoQuestao");
-
-    explicacao.style.display = "block";
-
-    explicacao.innerHTML = `
-        <h4 style="margin-top:0;">Explicação</h4>
-
-        <p>
-            ${escaparHTML(
-                questaoAtual.explicacao || ""
-            )}
-        </p>
-
-        <h4>Fundamento</h4>
-
-        <p>
-            ${escaparHTML(
-                questaoAtual.fundamento || ""
-            )}
-        </p>
-    `;
-
-
-    document
-        .getElementById("btnProxima")
-        .style.display = "block";
-
-
-    /* REGISTRA A RESPOSTA */
-
-    try {
-
-        const { error } =
-            await supabaseClient
-                .from("respostas")
-                .insert({
-                    perfil_id: perfilAtual,
-                    questao_id: questaoAtual.id,
-                    alternativa_marcada: letraEscolhida,
-                    acertou: !!estavaCorreta
-                });
-
-        if (error) {
-
-            console.error(
-                "Erro ao registrar resposta:",
-                error
+            elAlternativas.appendChild(
+                botao
             );
 
         }
+    );
 
-    } catch (erro) {
+}
 
-        console.error(erro);
+
+/* =========================================================
+   RESPONDER
+   ========================================================= */
+
+async function responder(
+    letra
+){
+
+    if(respondida){
+
+        return;
+
+    }
+
+
+    respondida = true;
+
+
+    const correta =
+        altAtual.find(
+            function(a){
+
+                return a.correta === true;
+
+            }
+        );
+
+
+    const acertou =
+        correta &&
+        correta.letra === letra;
+
+
+    Array.from(
+        elAlternativas.children
+    ).forEach(
+        function(botao,index){
+
+            const alternativa =
+                altAtual[index];
+
+
+            botao.disabled =
+                true;
+
+
+            if(
+                alternativa.correta
+            ){
+
+                botao.classList.add(
+                    "correct"
+                );
+
+            }
+
+
+            if(
+                alternativa.letra === letra &&
+                !alternativa.correta
+            ){
+
+                botao.classList.add(
+                    "wrong"
+                );
+
+            }
+
+        }
+    );
+
+
+    if(acertou){
+
+        elResultado.className =
+            "ok";
+
+
+        elResultado.innerHTML =
+            "<b>✓ CORRETA</b>";
+
+    }else{
+
+        elResultado.className =
+            "bad";
+
+
+        elResultado.innerHTML =
+            "<b>✗ INCORRETA</b>" +
+            "<br>" +
+            "Gabarito: " +
+            (
+                correta
+                    ? correta.letra
+                    : "—"
+            );
+
+    }
+
+
+    elExplicacao.innerHTML =
+
+        "<h3>Explicação</h3>" +
+
+        "<p>" +
+        esc(
+            qAtual.explicacao || ""
+        ) +
+        "</p>" +
+
+        "<h3>Fundamento</h3>" +
+
+        "<p>" +
+        esc(
+            qAtual.fundamento || ""
+        ) +
+        "</p>";
+
+
+    elExplicacao.classList.remove(
+        "hidden"
+    );
+
+
+    elProxima.classList.remove(
+        "hidden"
+    );
+
+
+    if(
+        modo === "simulado" &&
+        acertou
+    ){
+
+        simuladoAcertos++;
+
+    }
+
+
+    /* =========================
+       REGISTRAR RESPOSTA
+       ========================= */
+
+    const r =
+        await supabaseClient
+            .from("respostas")
+            .insert({
+
+                perfil_id:
+                    perfilAtual,
+
+                questao_id:
+                    qAtual.id,
+
+                alternativa_marcada:
+                    letra,
+
+                acertou:
+                    !!acertou
+
+            });
+
+
+    if(r.error){
+
+        console.warn(
+            "Não foi possível registrar resposta:",
+            r.error
+        );
+
+    }
+
+
+    if(
+        modo === "simulado" &&
+        pos === fila.length - 1
+    ){
+
+        elProxima.textContent =
+            "Ver resultado";
 
     }
 
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
+   PRÓXIMA QUESTÃO
+   ========================================================= */
+
+elProxima.addEventListener(
+    "click",
+    proxima
+);
+
+
+async function proxima(){
+
+    pos++;
+
+
+    if(
+        modo === "simulado" &&
+        pos >= fila.length
+    ){
+
+        finalizarSimulado();
+
+        return;
+
+    }
+
+
+    if(
+        modo === "estudo" &&
+        pos >= fila.length
+    ){
+
+        embaralhar(
+            bancoQuestoes
+        );
+
+
+        fila =
+            bancoQuestoes.map(
+                function(q){
+
+                    return q.id;
+
+                }
+            );
+
+
+        pos = 0;
+
+    }
+
+
+    await carregarQuestao();
+
+}
+
+
+/* =========================================================
+   RESULTADO DO SIMULADO
+   ========================================================= */
+
+function finalizarSimulado(){
+
+    elQuestaoBox.classList.add(
+        "hidden"
+    );
+
+
+    elPainel.classList.remove(
+        "hidden"
+    );
+
+
+    const total =
+        fila.length;
+
+
+    const percentual =
+        total
+            ? Math.round(
+                simuladoAcertos /
+                total *
+                100
+            )
+            : 0;
+
+
+    elPainel.innerHTML =
+
+        "<h2>Resultado do simulado</h2>" +
+
+        "<p>" +
+        "Acertos: <b>" +
+        simuladoAcertos +
+        "</b> de " +
+        total +
+        "</p>" +
+
+        "<p>" +
+        "Aproveitamento: <b>" +
+        percentual +
+        "%</b>" +
+        "</p>" +
+
+        "<button " +
+        "class='primary wide' " +
+        "onclick='voltar()'>" +
+        "Voltar" +
+        "</button>";
+
+}
+
+
+/* =========================================================
+   DESEMPENHO
+   ========================================================= */
+
+document
+    .getElementById("btnDesempenho")
+    .addEventListener(
+        "click",
+        mostrarDesempenho
+    );
+
+
+async function mostrarDesempenho(){
+
+    if(!elPerfil.value){
+
+        alert(
+            "Selecione o usuário."
+        );
+
+        return;
+
+    }
+
+
+    const r =
+        await supabaseClient
+            .from("respostas")
+            .select(
+                "acertou,respondida_em"
+            )
+            .eq(
+                "perfil_id",
+                elPerfil.value
+            );
+
+
+    if(r.error){
+
+        alert(
+            r.error.message
+        );
+
+        return;
+
+    }
+
+
+    const total =
+        r.data.length;
+
+
+    const acertos =
+        r.data.filter(
+            function(x){
+
+                return x.acertou;
+
+            }
+        ).length;
+
+
+    const erros =
+        total - acertos;
+
+
+    const percentual =
+        total
+            ? Math.round(
+                acertos /
+                total *
+                100
+            )
+            : 0;
+
+
+    elConfig.classList.add(
+        "hidden"
+    );
+
+
+    elQuestaoBox.classList.add(
+        "hidden"
+    );
+
+
+    elPainel.classList.remove(
+        "hidden"
+    );
+
+
+    elPainel.innerHTML =
+
+        "<h2>Meu desempenho</h2>" +
+
+        "<p>" +
+        "Respondidas: <b>" +
+        total +
+        "</b>" +
+        "</p>" +
+
+        "<p>" +
+        "Acertos: <b>" +
+        acertos +
+        "</b>" +
+        "</p>" +
+
+        "<p>" +
+        "Erros: <b>" +
+        erros +
+        "</b>" +
+        "</p>" +
+
+        "<p>" +
+        "Aproveitamento: <b>" +
+        percentual +
+        "%</b>" +
+        "</p>" +
+
+        "<button " +
+        "class='wide' " +
+        "onclick='voltar()'>" +
+        "Voltar" +
+        "</button>";
+
+}
+
+
+/* =========================================================
+   MEUS ERROS
+   ========================================================= */
+
+document
+    .getElementById("btnErros")
+    .addEventListener(
+        "click",
+        mostrarErros
+    );
+
+
+async function mostrarErros(){
+
+    if(!elPerfil.value){
+
+        alert(
+            "Selecione o usuário."
+        );
+
+        return;
+
+    }
+
+
+    const r =
+        await supabaseClient
+            .from("respostas")
+            .select(
+                "questao_id"
+            )
+            .eq(
+                "perfil_id",
+                elPerfil.value
+            )
+            .eq(
+                "acertou",
+                false
+            )
+            .order(
+                "respondida_em",
+                {
+                    ascending:false
+                }
+            );
+
+
+    if(r.error){
+
+        alert(
+            r.error.message
+        );
+
+        return;
+
+    }
+
+
+    const ids =
+        [
+            ...new Set(
+                r.data.map(
+                    function(x){
+
+                        return x.questao_id;
+
+                    }
+                )
+            )
+        ];
+
+
+    elConfig.classList.add(
+        "hidden"
+    );
+
+
+    elQuestaoBox.classList.add(
+        "hidden"
+    );
+
+
+    elPainel.classList.remove(
+        "hidden"
+    );
+
+
+    if(!ids.length){
+
+        elPainel.innerHTML =
+
+            "<h2>Meus erros</h2>" +
+
+            "<p>" +
+            "Nenhum erro registrado." +
+            "</p>" +
+
+            "<button " +
+            "class='wide' " +
+            "onclick='voltar()'>" +
+            "Voltar" +
+            "</button>";
+
+        return;
+
+    }
+
+
+    const q =
+        await supabaseClient
+            .from("questoes")
+            .select(
+                "id,enunciado,assuntos(nome,materias(nome))"
+            )
+            .in(
+                "id",
+                ids
+            );
+
+
+    if(q.error){
+
+        alert(
+            q.error.message
+        );
+
+        return;
+
+    }
+
+
+    elPainel.innerHTML =
+        "<h2>Meus erros</h2>" +
+        (
+            q.data || []
+        ).map(
+            function(item,index){
+
+                return `
+                    <div class="card">
+                        <b>
+                            ${index + 1}.
+                            ${esc(
+                                item.assuntos.materias.nome
+                            )}
+                            •
+                            ${esc(
+                                item.assuntos.nome
+                            )}
+                        </b>
+
+                        <p>
+                            ${esc(
+                                item.enunciado
+                            )}
+                        </p>
+                    </div>
+                `;
+
+            }
+        ).join("") +
+
+        "<button " +
+        "class='wide' " +
+        "onclick='voltar()'>" +
+        "Voltar" +
+        "</button>";
+
+}
+
+
+/* =========================================================
    VOLTAR
-   --------------------------------------------------------- */
+   ========================================================= */
 
-function voltarConfiguracao() {
+document
+    .getElementById("btnVoltarQuestao")
+    .addEventListener(
+        "click",
+        voltar
+    );
 
-    document
-        .getElementById("areaQuestao")
-        .style.display = "none";
 
-    document
-        .getElementById("configEstudo")
-        .style.display = "block";
+function voltar(){
 
-    document.getElementById(
-        "mensagemEstudo"
-    ).innerHTML = "";
+    elQuestaoBox.classList.add(
+        "hidden"
+    );
+
+
+    elPainel.classList.add(
+        "hidden"
+    );
+
+
+    elConfig.classList.remove(
+        "hidden"
+    );
+
+
+    elProxima.textContent =
+        "Próxima";
+
+}
+
+
+/* =========================================================
+   EMBARALHAR
+   ========================================================= */
+
+function embaralhar(array){
+
+    for(
+        let i = array.length - 1;
+        i > 0;
+        i--
+    ){
+
+        const j =
+            Math.floor(
+                Math.random() *
+                (i + 1)
+            );
+
+
+        [
+            array[i],
+            array[j]
+        ] =
+        [
+            array[j],
+            array[i]
+        ];
+
+    }
 
 }
 
 
-/* ---------------------------------------------------------
-   SEGURANÇA BÁSICA PARA TEXTO HTML
-   --------------------------------------------------------- */
+/* =========================================================
+   ESCAPAR HTML
+   ========================================================= */
 
-function escaparHTML(texto) {
+function esc(texto){
 
-    return String(texto || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return String(
+        texto ?? ""
+    )
+    .replace(
+        /[&<>"']/g,
+        function(c){
+
+            return {
+
+                "&":"&amp;",
+                "<":"&lt;",
+                ">":"&gt;",
+                '"':"&quot;",
+                "'":"&#039;"
+
+            }[c];
+
+        }
+    );
 
 }
+
 </script>
 
 </body>
