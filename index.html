@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+
+  <title>OGMO Estudos</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #0f172a;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      max-width: 760px;
+      margin: auto;
+      padding: 22px 18px 100px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: #64748b;
+    }
+
+    h1 {
+      margin: 4px 0 0;
+      font-size: 26px;
+    }
+
+    .location {
+      margin: 3px 0 0;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 50%;
+      background: #0f172a;
+      color: white;
+      font-weight: bold;
+    }
+
+    .welcome {
+      margin: 30px 0 18px;
+    }
+
+    .welcome small {
+      color: #64748b;
+    }
+
+    .welcome h2 {
+      margin: 6px 0;
+      font-size: 26px;
+    }
+
+    .welcome p {
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .hero {
+      padding: 23px;
+      border-radius: 24px;
+      background: #0f172a;
+      color: white;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 20px;
+      background: #263247;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .hero h3 {
+      margin: 14px 0 7px;
+      font-size: 23px;
+    }
+
+    .hero p {
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .primary {
+      border: 0;
+      border-radius: 13px;
+      padding: 13px 17px;
+      background: white;
+      color: #0f172a;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .card {
+      border: 1px solid #e2e8f0;
+      background: white;
+      border-radius: 20px;
+      padding: 18px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .icon {
+      display: block;
+      font-size: 25px;
+      margin-bottom: 14px;
+    }
+
+    .card strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .card small {
+      display: block;
+      margin-top: 5px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .section {
+      margin-top: 25px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-header h3 {
+      margin: 0 0 10px;
+    }
+
+    .subject {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      margin-bottom: 9px;
+      border: 1px solid #e2e8f0;
+      border-radius: 15px;
+      background: white;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .subject span:last-child {
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .bottom {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: min(100%, 760px);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 10px 8px;
+      background: white;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .bottom button {
+      border: 0;
+      background: white;
+      color: #64748b;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .bottom span {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 3px;
+    }
+
+    @media (min-width: 650px) {
+      .grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="app">
+
+    <header class="topbar">
+
+      <div>
+        <div class="eyebrow">CONCURSO OGMO</div>
+        <h1>OGMO Estudos</h1>
+        <p class="location">Rio Grande/RS</p>
+      </div>
+
+      <button class="avatar">MS</button>
+
+    </header>
+
+
+    <section class="welcome">
+
+      <small>Bom estudo!</small>
+
+      <h2>Continue sua preparação</h2>
+
+      <p>
+        Questões revisadas e fundamentos normativos
+        para você estudar com confiança.
+      </p>
+
+    </section>
+
+
+    <section class="hero">
+
+      <span class="pill">BANCO GOLD</span>
+
+      <h3>795 questões confiáveis</h3>
+
+      <p>
+        Questões aprovadas pelo nosso critério de
+        gabarito, conceito, fundamento e vigência normativa.
+      </p>
+
+      <button class="primary" onclick="mensagem('Questões — vamos construir essa tela agora!')">
+        Estudar questões
+      </button>
+
+    </section>
+
+
+    <section class="grid">
+
+      <button class="card" onclick="mensagem('Simulados — próxima etapa')">
+        <span class="icon">📝</span>
+        <strong>Simulados</strong>
+        <small>Provas de 40 questões</small>
+      </button>
+
+      <button class="card" onclick="mensagem('Meus erros — próxima etapa')">
+        <span class="icon">❌</span>
+        <strong>Meus erros</strong>
+        <small>Revise o que você errou</small>
+      </button>
+
+      <button class="card" onclick="mensagem('Favoritos — próxima etapa')">
+        <span class="icon">⭐</span>
+        <strong>Favoritos</strong>
+        <small>Questões salvas por você</small>
+      </button>
+
+      <button class="card" onclick="mensagem('Desempenho — próxima etapa')">
+        <span class="icon">📊</span>
+        <strong>Meu desempenho</strong>
+        <small>Acompanhe sua evolução</small>
+      </button>
+
+    </section>
+
+
+    <section class="section">
+
+      <div class="section-header">
+        <h3>Matérias</h3>
+      </div>
+
+
+      <button class="subject" onclick="mensagem('NR-29')">
+        <span>NR-29</span>
+        <span>285 questões</span>
+      </button>
+
+      <button class="subject" onclick="mensagem('NR-35')">
+        <span>NR-35</span>
+        <span>133 questões</span>
+      </button>
+
+      <button class="subject" onclick="mensagem('Lei 9.719/98')">
+        <span>Lei 9.719/98</span>
+        <span>157 questões</span>
+      </button>
+
+      <button class="subject" onclick="mensagem('Lei 12.815/13')">
+        <span>Lei 12.815/13</span>
+        <span>148 questões</span>
+      </button>
+
+      <button class="subject" onclick="mensagem('Decreto 8.033/13')">
+        <span>Decreto 8.033/13</span>
+        <span>72 questões</span>
+      </button>
+
+    </section>
+
+  </main>
+
+
+  <nav class="bottom">
+
+    <button onclick="mensagem('Início')">
+      <span>⌂</span>
+      Início
+    </button>
+
+    <button onclick="mensagem('Questões')">
+      <span>?</span>
+      Questões
+    </button>
+
+    <button onclick="mensagem('Simulado')">
+      <span>▣</span>
+      Simulado
+    </button>
+
+    <button onclick="mensagem('Desempenho')">
+      <span>◔</span>
+      Desempenho
+    </button>
+
+  </nav>
+
+
+  <script>
+
+    function mensagem(texto) {
+      alert(texto);
+    }
+
+  </script>
+
+</body>
+</html>
