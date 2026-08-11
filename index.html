@@ -701,20 +701,11 @@ async function iniciarEstudo() {
 /* ---------------------------------------------------------
    CARREGA UMA QUESTÃO
    --------------------------------------------------------- */
-
 async function carregarProximaQuestao() {
 
-    document
-        .getElementById("resultadoQuestao")
-        .style.display = "none";
-
-    document
-        .getElementById("explicacaoQuestao")
-        .style.display = "none";
-
-    document
-        .getElementById("btnProxima")
-        .style.display = "none";
+    document.getElementById("resultadoQuestao").style.display = "none";
+    document.getElementById("explicacaoQuestao").style.display = "none";
+    document.getElementById("btnProxima").style.display = "none";
 
     const areaAlternativas =
         document.getElementById("alternativasQuestao");
@@ -724,47 +715,82 @@ async function carregarProximaQuestao() {
 
     try {
 
-        let consulta =
+        /* 1. Descobre os assuntos da matéria escolhida */
+
+        let consultaAssuntos =
             supabaseClient
-                .from("questoes")
-                .select(`
-                    id,
-                    id_curadoria,
-                    enunciado,
-                    explicacao,
-                    fundamento,
-                    dificuldade,
-                    assunto_id,
-                    assuntos!inner (
-                        id,
-                        nome,
-                        materia_id,
-                        materias!inner (
-                            id,
-                            nome
-                        )
-                    )
-                `)
-                .eq("ativa", true)
-                .eq("status_revisao", "aprovada_gold");
+                .from("assuntos")
+                .select("id");
 
         if (materiaAtual) {
-
-            consulta =
-                consulta.eq(
-                    "assuntos.materia_id",
+            consultaAssuntos =
+                consultaAssuntos.eq(
+                    "materia_id",
                     materiaAtual
                 );
-
         }
 
-        const { data: questoes, error } =
-            await consulta
-                .range(indiceQuestao, indiceQuestao);
+        const {
+            data: assuntos,
+            error: erroAssuntos
+        } = await consultaAssuntos;
 
-        if (error) throw error;
+        if (erroAssuntos) throw erroAssuntos;
+
+        if (!assuntos || assuntos.length === 0) {
+
+            areaAlternativas.innerHTML = "";
+
+            mensagem(
+                "Não encontramos assuntos para essa matéria.",
+                "erro"
+            );
+
+            return;
+        }
+
+        const idsAssuntos =
+            assuntos.map(function (assunto) {
+                return assunto.id;
+            });
+
+
+        /* 2. Busca as questões desses assuntos */
+
+        const {
+            data: questoes,
+            error: erroQuestoes
+        } = await supabaseClient
+            .from("questoes")
+            .select(`
+                id,
+                id_curadoria,
+                enunciado,
+                explicacao,
+                fundamento,
+                dificuldade,
+                assunto_id,
+                assuntos (
+                    id,
+                    nome,
+                    materia_id,
+                    materias (
+                        id,
+                        nome
+                    )
+                )
+            `)
+            .in("assunto_id", idsAssuntos)
+            .eq("ativa", true)
+            .eq("status_revisao", "aprovada_gold")
+            .order("id_curadoria")
+            .range(indiceQuestao, indiceQuestao);
+
+        if (erroQuestoes) throw erroQuestoes;
 
         if (!questoes || questoes.length === 0) {
+
+            areaAlternativas.innerHTML = "";
 
             mensagem(
                 "Não encontramos mais questões para esse filtro.",
@@ -777,18 +803,32 @@ async function carregarProximaQuestao() {
         questaoAtual = questoes[0];
 
 
-        const { data: alternativas, error: erroAlternativas } =
-            await supabaseClient
-                .from("alternativas")
-                .select("id,letra,texto,correta,ordem")
-                .eq("questao_id", questaoAtual.id)
-                .order("ordem");
+        /* 3. Busca as cinco alternativas */
+
+        const {
+            data: alternativas,
+            error: erroAlternativas
+        } = await supabaseClient
+            .from("alternativas")
+            .select(
+                "id,letra,texto,correta,ordem"
+            )
+            .eq(
+                "questao_id",
+                questaoAtual.id
+            )
+            .order("ordem");
 
         if (erroAlternativas) throw erroAlternativas;
 
-        alternativasAtuais = alternativas || [];
+        alternativasAtuais =
+            alternativas || [];
+
+
+        /* 4. Mostra a questão */
 
         mostrarQuestao();
+
 
     } catch (erro) {
 
@@ -798,14 +838,14 @@ async function carregarProximaQuestao() {
 
         mensagem(
             "Erro ao carregar questão:<br><br>" +
-            escaparHTML(erro.message || String(erro)),
+            escaparHTML(
+                erro.message || String(erro)
+            ),
             "erro"
         );
 
     }
-
 }
-
 
 /* ---------------------------------------------------------
    MOSTRA QUESTÃO NA TELA
